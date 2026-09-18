@@ -1,0 +1,1692 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Conselho de Classe - Gestão e Acompanhamento Pedagógico</title>
+  <meta name="description" content="Sistema autônomo e completo de gestão e acompanhamento pedagógico escolar para conselho de classe, pré-conselho docente e discente." />
+  <meta property="og:title" content="Conselho de Classe - Gestão e Acompanhamento Pedagógico" />
+  <meta property="og:description" content="Sistema autônomo e completo de gestão e acompanhamento pedagógico escolar para conselho de classe, pré-conselho docente e discente." />
+
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'sans-serif'],
+          },
+          boxShadow: {
+            '2xs': '0 1px 2px 0 rgba(0, 0, 0, 0.03)',
+            'xs': '0 1px 3px 0 rgba(0, 0, 0, 0.05)',
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- React 18, ReactDOM 18 e Babel Standalone via CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    @media print {
+      body {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .print-only {
+        display: block !important;
+      }
+      .print-card {
+        box-shadow: none !important;
+        border: 1px solid #e2e8f0 !important;
+        page-break-inside: avoid;
+      }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fadeIn {
+      animation: fadeIn 0.25s ease-out forwards;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 font-sans antialiased min-h-screen selection:bg-blue-100 selection:text-blue-900">
+  <div id="root"></div>
+
+  <!-- SCRIPT REACT + BABEL -->
+  <script type="text/babel">
+    const { useState, useEffect, useMemo } = React;
+
+    // --- ÍCONES SVG PERSONALIZADOS (LUCIDE EQUIVALENTS) ---
+    function Icon({ name, className = "w-4 h-4", ...props }) {
+      const paths = {
+        LayoutDashboard: <><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></>,
+        FileText: <><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></>,
+        FileCheck: <><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="m9 15 2 2 4-4"/></>,
+        School: <><path d="m4 6 8-4 8 4"/><path d="m18 10 4 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-8l4-2"/><path d="M14 22v-4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v4"/><path d="M18 5v17"/><path d="M6 5v17"/></>,
+        GraduationCap: <><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></>,
+        TrendingUp: <><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></>,
+        Users: <><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>,
+        UserCheck: <><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></>,
+        BookOpen: <><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></>,
+        ClipboardCheck: <><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></>,
+        CalendarCheck: <><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/><path d="m9 16 2 2 4-4"/></>,
+        CheckCircle: <><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></>,
+        AlertTriangle: <><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></>,
+        Download: <><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></>,
+        Printer: <><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></>,
+        Eye: <><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></>,
+        Save: <><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></>,
+        Send: <><line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></>,
+        Clock: <><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>,
+        ArrowLeft: <><line x1="19" x2="5" y1="12" y2="12"/><polyline points="12 19 5 12 12 5"/></>,
+        ArrowRight: <><line x1="5" x2="19" y1="12" y2="12"/><polyline points="12 5 19 12 12 19"/></>,
+        Search: <><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/></>,
+        Sparkles: <><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></>,
+        RotateCcw: <><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></>,
+        Settings: <><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></>,
+        Check: <><polyline points="20 6 9 17 4 12"/></>,
+        X: <><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></>,
+        Filter: <><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></>,
+        ChevronRight: <><polyline points="9 18 15 12 9 6"/></>
+      };
+
+      return (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className={className}
+          {...props}
+        >
+          {paths[name] || <circle cx="12" cy="12" r="10"/>}
+        </svg>
+      );
+    }
+
+    // --- DADOS INICIAIS DA ESCOLA ---
+    const ESCOLA_NOME = "ESCOLA ESTADUAL DO CAMPO FREI GRACIANO DRESSLER";
+    const ESCOLA_MODALIDADE = "ENSINO FUNDAMENTAL EM TEMPO INTEGRAL";
+    const ANO_LETIVO_PADRAO = 2026;
+    const PERIODO_ATUAL = "2º Bimestre";
+
+    const TURMAS_BASE = [
+      { id: 'turma-6a', nome: '6º Ano A', serie: '6º Ano EF', anoLetivo: 2026, turno: 'Integral', totalAlunos: 28, sala: 'Sala 01 - Bloco Pedagógico' },
+      { id: 'turma-7a', nome: '7º Ano A', serie: '7º Ano EF', anoLetivo: 2026, turno: 'Integral', totalAlunos: 30, sala: 'Sala 02 - Bloco Pedagógico' },
+      { id: 'turma-7b', nome: '7º Ano B', serie: '7º Ano EF', anoLetivo: 2026, turno: 'Integral', totalAlunos: 29, sala: 'Sala 03 - Bloco Pedagógico' },
+      { id: 'turma-8a', nome: '8º Ano A', serie: '8º Ano EF', anoLetivo: 2026, turno: 'Integral', totalAlunos: 27, sala: 'Sala 04 - Bloco Pedagógico' },
+      { id: 'turma-9a', nome: '9º Ano A', serie: '9º Ano EF', anoLetivo: 2026, turno: 'Integral', totalAlunos: 26, sala: 'Sala 05 - Bloco Pedagógico' },
+    ];
+
+    const DISCIPLINAS_BASE = [
+      { id: 'disc-mat', nome: 'Matemática', codigo: 'MAT', cargaHoraria: 160 },
+      { id: 'disc-port', nome: 'Língua Portuguesa', codigo: 'LP', cargaHoraria: 160 },
+      { id: 'disc-cien', nome: 'Ciências da Natureza', codigo: 'CIE', cargaHoraria: 120 },
+      { id: 'disc-hist', nome: 'História', codigo: 'HIST', cargaHoraria: 80 },
+      { id: 'disc-geo', nome: 'Geografia', codigo: 'GEO', cargaHoraria: 80 },
+      { id: 'disc-ing', nome: 'Língua Inglesa', codigo: 'ING', cargaHoraria: 80 },
+      { id: 'disc-art', nome: 'Arte', codigo: 'ART', cargaHoraria: 80 },
+      { id: 'disc-ef', nome: 'Educação Física', codigo: 'EDF', cargaHoraria: 80 },
+    ];
+
+    const USUARIOS_BASE = [
+      { id: 'user-dir-1', nome: 'Profa. Carmen Oliveira', email: 'carmen.diretora@escola.gov.br', perfil: 'DIRETORA', status: 'ATIVO' },
+      { id: 'user-coord-1', nome: 'Profa. Helena Ramos', email: 'helena.coord@escola.gov.br', perfil: 'COORDENACAO', status: 'ATIVO' },
+      { id: 'user-prof-1', nome: 'Prof. Carlos Silva', email: 'carlos.matematica@escola.gov.br', perfil: 'PROFESSOR', status: 'ATIVO', turmas: ['turma-7a', 'turma-8a', 'turma-9a'], disciplinas: ['disc-mat'] },
+      { id: 'user-prof-2', nome: 'Profa. Mariana Costa', email: 'mariana.portugues@escola.gov.br', perfil: 'PROFESSOR', status: 'ATIVO', turmas: ['turma-6a', 'turma-7a', 'turma-7b'], disciplinas: ['disc-port'] },
+      { id: 'user-prof-3', nome: 'Prof. Roberto Almeida', email: 'roberto.ciencias@escola.gov.br', perfil: 'PROFESSOR', status: 'ATIVO', turmas: ['turma-6a', 'turma-7a', 'turma-8a'], disciplinas: ['disc-cien'] },
+      { id: 'user-prof-4', nome: 'Profa. Fernanda Lima', email: 'fernanda.historia@escola.gov.br', perfil: 'PROFESSOR', status: 'ATIVO', turmas: ['turma-7a', 'turma-7b', 'turma-9a'], disciplinas: ['disc-hist'] }
+    ];
+
+    const ALUNOS_BASE = [
+      { id: 'aluno-1', matricula: '2026101', nome: 'Alice Fernandes Souza', turmaId: 'turma-7a', media: 8.5, frequencia: 96, emAcompanhamento: false, obs: 'Excelente participação e assiduidade.' },
+      { id: 'aluno-2', matricula: '2026102', nome: 'Bernardo Lima Rezende', turmaId: 'turma-7a', media: 4.8, frequencia: 71, emAcompanhamento: true, obs: 'Dificuldade em operações fracionárias e faltas recorrentes às segundas-feiras.' },
+      { id: 'aluno-3', matricula: '2026103', nome: 'Caio Vinicius de Andrade', turmaId: 'turma-7a', media: 7.2, frequencia: 92, emAcompanhamento: false, obs: 'Boa evolução após reforço pedagógico.' },
+      { id: 'aluno-4', matricula: '2026104', nome: 'Daniel Ribeiro Gomes', turmaId: 'turma-7a', media: 5.2, frequencia: 84, emAcompanhamento: true, obs: 'Necessita de acompanhamento em interpretação de texto e matemática.' },
+      { id: 'aluno-5', matricula: '2026105', nome: 'Eduarda Guimarães Peixoto', turmaId: 'turma-7a', media: 9.4, frequencia: 98, emAcompanhamento: false, obs: 'Destaque acadêmico e monitora voluntária.' },
+      { id: 'aluno-6', matricula: '2026106', nome: 'Felipe Nogueira Barbosa', turmaId: 'turma-7a', media: 6.8, frequencia: 89, emAcompanhamento: false, obs: 'Rendimento estável.' },
+      { id: 'aluno-7', matricula: '2026107', nome: 'Gabriela Duarte Silveira', turmaId: 'turma-7a', media: 4.5, frequencia: 68, emAcompanhamento: true, obs: 'Baixa frequência com risco de retenção. Busca ativa comunicada ao conselho tutelar.' },
+      { id: 'aluno-8', matricula: '2026108', nome: 'Helena Martins Vilela', turmaId: 'turma-8a', media: 8.8, frequencia: 94, emAcompanhamento: false, obs: 'Excelente raciocínio lógico.' },
+      { id: 'aluno-9', matricula: '2026109', nome: 'Igor Medeiros Cunha', turmaId: 'turma-8a', media: 5.0, frequencia: 79, emAcompanhamento: true, obs: 'Apresenta déficit em conteúdos basais de álgebra.' },
+      { id: 'aluno-10', matricula: '2026110', nome: 'João Pedro Albuquerque', turmaId: 'turma-9a', media: 7.9, frequencia: 91, emAcompanhamento: false, obs: 'Participação constante nas aulas de ciências.' },
+      { id: 'aluno-11', matricula: '2026111', nome: 'Lucas Emanuel Cardoso', turmaId: 'turma-9a', media: 4.2, frequencia: 65, emAcompanhamento: true, obs: 'Em acompanhamento com o setor de orientação educacional.' },
+      { id: 'aluno-12', matricula: '2026112', nome: 'Manuela Barreto Farias', turmaId: 'turma-6a', media: 9.1, frequencia: 97, emAcompanhamento: false, obs: 'Ótima adaptação ao 6º ano integral.' }
+    ];
+
+    const RELATORIOS_BASE = [
+      {
+        id: 'rel-1',
+        professorId: 'user-prof-1',
+        professorNome: 'Prof. Carlos Silva',
+        turmaId: 'turma-7a',
+        turmaNome: '7º Ano A',
+        disciplinaId: 'disc-mat',
+        disciplinaNome: 'Matemática',
+        periodo: '2º Bimestre',
+        anoLetivo: 2026,
+        status: 'ENVIADO',
+        dataEnvio: '15/09/2026 às 16:30',
+        respostas: {
+          desenvolvimentoGeral: 'A turma demonstra bom envolvimento coletivo com atividades lúdicas de álgebra. Entretanto, há dispersão quando os cálculos exigem leitura de problemas complexos.',
+          dificuldadesGerais: 'Interpretação textual de enunciados e resolução de frações/porcentagens.',
+          alunosDificuldade: 'Bernardo Lima Rezende e Gabriela Duarte Silveira.',
+          alunosDestaque: 'Alice Fernandes Souza e Eduarda Guimarães Peixoto.',
+          fatoresAssiduidade: 'Faltas reiteradas às segundas-feiras por parte de 3 estudantes prejudicam a continuidade pedagógica.',
+          acoesPedagogicas: 'Plantão semanal de reforço às quartas-feiras no contraturno e disponibilização de listas com resolução comentada.',
+          sinteseGeral: 'Turma com potencial excelente. Com intervenções focadas no grupo de apoio, prevemos 90% de aproveitamento satisfatório.'
+        }
+      },
+      {
+        id: 'rel-2',
+        professorId: 'user-prof-2',
+        professorNome: 'Profa. Mariana Costa',
+        turmaId: 'turma-7a',
+        turmaNome: '7º Ano A',
+        disciplinaId: 'disc-port',
+        disciplinaNome: 'Língua Portuguesa',
+        periodo: '2º Bimestre',
+        anoLetivo: 2026,
+        status: 'ENVIADO',
+        dataEnvio: '14/09/2026 às 11:20',
+        respostas: {
+          desenvolvimentoGeral: 'Progresso expressivo na produção de resenhas críticas e debates orais sobre temas contemporâneos.',
+          dificuldadesGerais: 'Coesão referencial e regras de concordância verbal na escrita formal.',
+          alunosDificuldade: 'Bernardo Lima Rezende e Daniel Ribeiro Gomes.',
+          alunosDestaque: 'Eduarda Guimarães Peixoto.',
+          acoesPedagogicas: 'Oficinas de reescrita em duplas produtivas e leitura orientada de clássicos juvenis.',
+          sinteseGeral: 'Relatório encaminhado para conhecimento da coordenação e alinhamento com a família dos alunos em atenção.'
+        }
+      }
+    ];
+
+    // --- COMPONENTE PRINCIPAL DA APLICAÇÃO ---
+    function App() {
+      // Carregar e persistir estado no LocalStorage
+      const [currentUser, setCurrentUser] = useState(() => {
+        const saved = localStorage.getItem('cc_currentUser');
+        return saved ? JSON.parse(saved) : USUARIOS_BASE[2]; // Default: Prof. Carlos Silva
+      });
+
+      const [activeTab, setActiveTab] = useState('dashboard');
+      const [turmas, setTurmas] = useState(() => {
+        const saved = localStorage.getItem('cc_turmas');
+        return saved ? JSON.parse(saved) : TURMAS_BASE;
+      });
+      const [disciplinas, setDisciplinas] = useState(() => {
+        const saved = localStorage.getItem('cc_disciplinas');
+        return saved ? JSON.parse(saved) : DISCIPLINAS_BASE;
+      });
+      const [alunos, setAlunos] = useState(() => {
+        const saved = localStorage.getItem('cc_alunos');
+        return saved ? JSON.parse(saved) : ALUNOS_BASE;
+      });
+      const [relatorios, setRelatorios] = useState(() => {
+        const saved = localStorage.getItem('cc_relatorios');
+        return saved ? JSON.parse(saved) : RELATORIOS_BASE;
+      });
+
+      // Estado do Pré-Conselho
+      const [preConselhoSubTab, setPreConselhoSubTab] = useState('PROFESSOR'); // 'PROFESSOR' | 'ALUNO' | 'SINTESE'
+      const [preStep, setPreStep] = useState(1);
+      const [selectedTurmaId, setSelectedTurmaId] = useState('turma-7a');
+      const [selectedDisciplinaId, setSelectedDisciplinaId] = useState('disc-mat');
+      const [selectedProfessorId, setSelectedProfessorId] = useState(currentUser.id);
+      const [previewReport, setPreviewReport] = useState(null);
+      const [selectedAlunoModal, setSelectedAlunoModal] = useState(null);
+      const [searchAluno, setSearchAluno] = useState('');
+      const [filterApenasAtencao, setFilterApenasAtencao] = useState(false);
+      const [notif, setNotif] = useState(null);
+
+      // Respostas do formulário docente
+      const [respostasDocente, setRespostasDocente] = useState({
+        desenvolvimentoGeral: 'A turma demonstra bom envolvimento com atividades práticas, porém necessita de maior concentração na resolução individual.',
+        dificuldadesGerais: 'Interpretação e raciocínio lógico em problemas matemáticos aplicados.',
+        alunosDificuldade: 'Bernardo Lima Rezende e Gabriela Duarte Silveira.',
+        alunosDestaque: 'Alice Fernandes Souza e Eduarda Guimarães Peixoto.',
+        fatoresAssiduidade: 'Faltas recorrentes às segundas-feiras afetam a fixação de novos conteúdos.',
+        acoesPedagogicas: 'Oferecer reforço contínuo no contraturno e disponibilizar exercícios de apoio com monitoria.',
+        sinteseGeral: 'Recomenda-se convocação dos responsáveis dos alunos em atenção prévia para alinhamento antes do conselho final.'
+      });
+
+      // Sincronizar com LocalStorage
+      useEffect(() => {
+        localStorage.setItem('cc_currentUser', JSON.stringify(currentUser));
+      }, [currentUser]);
+      useEffect(() => {
+        localStorage.setItem('cc_alunos', JSON.stringify(alunos));
+      }, [alunos]);
+      useEffect(() => {
+        localStorage.setItem('cc_relatorios', JSON.stringify(relatorios));
+      }, [relatorios]);
+
+      const triggerNotification = (msg, type = 'success') => {
+        setNotif({ msg, type });
+        setTimeout(() => setNotif(null), 3500);
+      };
+
+      // Função de Download do arquivo HTML completo
+      const handleDownloadSelf = () => {
+        const htmlContent = document.documentElement.outerHTML;
+        const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'conselho_pedagogico_autonomo.html';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        triggerNotification('Arquivo HTML autônomo baixado com sucesso! Você pode abri-lo direto no seu navegador.');
+      };
+
+      const currentTurma = turmas.find(t => t.id === selectedTurmaId) || turmas[0];
+      const currentDisciplina = disciplinas.find(d => d.id === selectedDisciplinaId) || disciplinas[0];
+
+      // Salvar Relatório de Pré-Conselho
+      const handleSalvarRelatorio = (status = 'ENVIADO') => {
+        const novoRel = {
+          id: `rel-${Date.now()}`,
+          professorId: currentUser.perfil === 'PROFESSOR' ? currentUser.id : selectedProfessorId,
+          professorNome: currentUser.perfil === 'PROFESSOR' ? currentUser.nome : (USUARIOS_BASE.find(u => u.id === selectedProfessorId)?.nome || currentUser.nome),
+          turmaId: currentTurma.id,
+          turmaNome: currentTurma.nome,
+          disciplinaId: currentDisciplina.id,
+          disciplinaNome: currentDisciplina.nome,
+          periodo: PERIODO_ATUAL,
+          anoLetivo: ANO_LETIVO_PADRAO,
+          status: status,
+          dataEnvio: new Date().toLocaleString('pt-BR'),
+          respostas: { ...respostasDocente }
+        };
+
+        const existingIndex = relatorios.findIndex(
+          r => r.turmaId === currentTurma.id && r.disciplinaId === currentDisciplina.id && r.professorId === novoRel.professorId
+        );
+
+        let atualizados;
+        if (existingIndex >= 0) {
+          atualizados = [...relatorios];
+          atualizados[existingIndex] = novoRel;
+        } else {
+          atualizados = [novoRel, ...relatorios];
+        }
+
+        setRelatorios(atualizados);
+        triggerNotification(
+          status === 'ENVIADO' 
+            ? 'Ficha de Pré-Conselho oficial enviada para a Coordenação Pedagógica!'
+            : 'Rascunho salvo com sucesso localmente.'
+        );
+        if (status === 'ENVIADO') {
+          setActiveTab('relatorios');
+        }
+      };
+
+      // Atualizar nota de aluno
+      const handleUpdateAlunoNota = (alunoId, novaNota, novaFreq) => {
+        setAlunos(prev => prev.map(a => {
+          if (a.id === alunoId) {
+            const media = parseFloat(novaNota) || a.media;
+            const frequencia = parseInt(novaFreq) || a.frequencia;
+            const emAcompanhamento = media < 6.0 || frequencia < 75;
+            return { ...a, media, frequencia, emAcompanhamento };
+          }
+          return a;
+        }));
+        triggerNotification('Dados do aluno atualizados!');
+      };
+
+      // Resetar dados de demonstração
+      const handleResetData = () => {
+        if (confirm('Deseja restaurar os dados originais da demonstração?')) {
+          localStorage.removeItem('cc_alunos');
+          localStorage.removeItem('cc_relatorios');
+          setAlunos(ALUNOS_BASE);
+          setRelatorios(RELATORIOS_BASE);
+          triggerNotification('Dados restaurados com sucesso!');
+        }
+      };
+
+      return (
+        <div className="flex flex-col min-h-screen">
+          {/* TOPO / HEADER */}
+          <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-2xs no-print">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-xs">
+                  <Icon name="School" className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-extrabold text-slate-900 text-sm sm:text-base tracking-tight">Conselho de Classe</span>
+                    <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                      Autônomo (Offline)
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 truncate max-w-[280px] sm:max-w-md">
+                    {ESCOLA_NOME} • {PERIODO_ATUAL}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2.5">
+                {/* Botão de Download do HTML */}
+                <button
+                  onClick={handleDownloadSelf}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1.5 shadow-xs transition-colors"
+                  title="Baixar este arquivo HTML para rodar offline direto no seu computador"
+                >
+                  <Icon name="Download" className="w-4 h-4" />
+                  <span className="hidden md:inline">Baixar HTML Autônomo</span>
+                </button>
+
+                {/* Seletor de Perfil */}
+                <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
+                  <div className="text-right hidden sm:block">
+                    <p className="text-xs font-bold text-slate-800 leading-tight">{currentUser.nome}</p>
+                    <span className="text-[10px] text-blue-600 font-semibold uppercase">{currentUser.perfil}</span>
+                  </div>
+                  <select
+                    value={currentUser.id}
+                    onChange={(e) => {
+                      const user = USUARIOS_BASE.find(u => u.id === e.target.value);
+                      if (user) {
+                        setCurrentUser(user);
+                        triggerNotification(`Perfil alternado para: ${user.nome} (${user.perfil})`);
+                      }
+                    }}
+                    className="bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    title="Alternar Perfil de Acesso"
+                  >
+                    {USUARIOS_BASE.map(u => (
+                      <option key={u.id} value={u.id}>{u.nome} ({u.perfil})</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+          </header>
+
+          {/* NOTIFICAÇÃO TOAST */}
+          {notif && (
+            <div className="fixed bottom-5 right-5 z-50 animate-fadeIn no-print">
+              <div className="bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-lg flex items-center gap-2.5 text-xs font-semibold border border-slate-800">
+                <Icon name="CheckCircle" className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>{notif.msg}</span>
+              </div>
+            </div>
+          )}
+
+          {/* LAYOUT PRINCIPAL COM SIDEBAR */}
+          <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row gap-6">
+            
+            {/* SIDEBAR DE NAVEGAÇÃO */}
+            <aside className="w-full md:w-64 shrink-0 no-print">
+              <div className="bg-white rounded-2xl p-3 border border-slate-200 shadow-2xs space-y-1 sticky top-22">
+                <div className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                  Menu Pedagógico
+                </div>
+
+                <button
+                  onClick={() => setActiveTab('dashboard')}
+                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 transition-colors ${
+                    activeTab === 'dashboard' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-700 hover:bg-slate-100'
+                  }`}
+                >
+                  <Icon name="LayoutDashboard" className="w-4 h-4" />
+                  <span>Painel Geral</span>
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('pre-conselho')}
+                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors ${
+                    activeTab === 'pre-conselho' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-700 hover:bg-slate-100'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Icon name="FileText" className="w-4 h-4" />
+                    <span>Pré-Conselho</span>
+                  </div>
+                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                    activeTab === 'pre-conselho' ? 'bg-emerald-700 text-white' : 'bg-emerald-100 text-emerald-800'
+                  }`}>
+                    Ativo
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('relatorios')}
+                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors ${
+                    activeTab === 'relatorios' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-700 hover:bg-slate-100'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Icon name="FileCheck" className="w-4 h-4" />
+                    <span>Relatórios / Atas</span>
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
+                    {relatorios.length}
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('notas-frequencia')}
+                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 transition-colors ${
+                    activeTab === 'notas-frequencia' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-700 hover:bg-slate-100'
+                  }`}
+                >
+                  <Icon name="ClipboardCheck" className="w-4 h-4" />
+                  <span>Notas & Frequência</span>
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('alunos')}
+                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors ${
+                    activeTab === 'alunos' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-700 hover:bg-slate-100'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Icon name="GraduationCap" className="w-4 h-4" />
+                    <span>Alunos & Acompanhamento</span>
+                  </div>
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800">
+                    {alunos.filter(a => a.emAcompanhamento).length} Atenção
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('analise')}
+                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 transition-colors ${
+                    activeTab === 'analise' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-700 hover:bg-slate-100'
+                  }`}
+                >
+                  <Icon name="TrendingUp" className="w-4 h-4" />
+                  <span>Análise Pedagógica</span>
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('professores')}
+                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 transition-colors ${
+                    activeTab === 'professores' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-700 hover:bg-slate-100'
+                  }`}
+                >
+                  <Icon name="Users" className="w-4 h-4" />
+                  <span>Corpo Docente</span>
+                </button>
+
+                <div className="pt-3 mt-3 border-t border-slate-100">
+                  <button
+                    onClick={handleResetData}
+                    className="w-full text-left px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 flex items-center gap-2"
+                  >
+                    <Icon name="RotateCcw" className="w-3.5 h-3.5 text-slate-400" />
+                    <span>Restaurar Dados</span>
+                  </button>
+                </div>
+              </div>
+            </aside>
+
+            {/* CONTEÚDO PRINCIPAL DAS ABAS */}
+            <main className="flex-1 min-w-0">
+
+              {/* ABA 1: DASHBOARD GERAL */}
+              {activeTab === 'dashboard' && (
+                <div className="space-y-6 animate-fadeIn">
+                  {/* Banner de Boas-Vindas */}
+                  <div className="bg-gradient-to-r from-blue-900 to-indigo-900 text-white rounded-3xl p-6 sm:p-8 shadow-sm">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                      <div>
+                        <span className="text-xs font-bold text-blue-200 uppercase tracking-wider">
+                          Conselho Pedagógico Integrado • {ANO_LETIVO_PADRAO}
+                        </span>
+                        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mt-1">
+                          Olá, {currentUser.nome}!
+                        </h1>
+                        <p className="text-xs sm:text-sm text-blue-100 mt-2 max-w-xl leading-relaxed">
+                          Você está no ambiente do <strong>{currentUser.perfil}</strong>. O período de Pré-Conselho do <strong>{PERIODO_ATUAL}</strong> está aberto para preenchimento docente e consolidação da coordenação.
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => setActiveTab('pre-conselho')}
+                        className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-extrabold text-xs px-5 py-3 rounded-2xl flex items-center gap-2 shadow-md transition-all shrink-0"
+                      >
+                        <Icon name="FileText" className="w-4 h-4" />
+                        <span>Preencher Pré-Conselho</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* CARDS DE INDICADORES */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-slate-500">Média Geral da Escola</span>
+                        <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                          <Icon name="TrendingUp" className="w-4 h-4" />
+                        </div>
+                      </div>
+                      <div className="mt-3 flex items-baseline gap-2">
+                        <span className="text-2xl font-black text-slate-900">7.2</span>
+                        <span className="text-[11px] font-bold text-emerald-600">+0.4 vs 1º Bim</span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 mt-1">Meta institucional: 7.0</p>
+                    </div>
+
+                    <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-slate-500">Assiduidade Média</span>
+                        <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                          <Icon name="UserCheck" className="w-4 h-4" />
+                        </div>
+                      </div>
+                      <div className="mt-3 flex items-baseline gap-2">
+                        <span className="text-2xl font-black text-slate-900">89.4%</span>
+                        <span className="text-[11px] font-bold text-emerald-600">Dentro da meta</span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 mt-1">Exigência legal: 75% mínimo</p>
+                    </div>
+
+                    <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-slate-500">Alunos em Atenção</span>
+                        <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                          <Icon name="AlertTriangle" className="w-4 h-4" />
+                        </div>
+                      </div>
+                      <div className="mt-3 flex items-baseline gap-2">
+                        <span className="text-2xl font-black text-amber-600">
+                          {alunos.filter(a => a.emAcompanhamento).length}
+                        </span>
+                        <span className="text-[11px] font-bold text-slate-500">de {alunos.length} cadastrados</span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 mt-1">Baixa nota e/ou infrequência</p>
+                    </div>
+
+                    <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-slate-500">Fichas Entregues</span>
+                        <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                          <Icon name="ClipboardCheck" className="w-4 h-4" />
+                        </div>
+                      </div>
+                      <div className="mt-3 flex items-baseline gap-2">
+                        <span className="text-2xl font-black text-slate-900">{relatorios.length}</span>
+                        <span className="text-[11px] font-bold text-slate-500">relatórios oficiais</span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 mt-1">Em tempo hábil para o conselho</p>
+                    </div>
+                  </div>
+
+                  {/* LISTA RÁPIDA: ALUNOS PRIORITÁRIOS & PRÉ-CONSELHOS */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Alunos que precisam de intervenção imediata */}
+                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                          <Icon name="AlertTriangle" className="w-4 h-4 text-amber-500" />
+                          Estudantes em Atenção Prioritária
+                        </h3>
+                        <button
+                          onClick={() => { setFilterApenasAtencao(true); setActiveTab('alunos'); }}
+                          className="text-xs font-bold text-blue-600 hover:underline"
+                        >
+                          Ver todos
+                        </button>
+                      </div>
+
+                      <div className="space-y-3">
+                        {alunos.filter(a => a.emAcompanhamento).slice(0, 4).map(aluno => (
+                          <div key={aluno.id} className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between gap-3">
+                            <div>
+                              <p className="text-xs font-bold text-slate-900">{aluno.nome}</p>
+                              <p className="text-[11px] text-slate-500">{turmas.find(t => t.id === aluno.turmaId)?.nome} • {aluno.obs}</p>
+                            </div>
+                            <div className="text-right shrink-0">
+                              <span className={`text-xs font-black px-2 py-0.5 rounded-lg ${
+                                aluno.media < 5 ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800'
+                              }`}>
+                                Média: {aluno.media.toFixed(1)}
+                              </span>
+                              <span className="block text-[10px] text-slate-500 mt-0.5">Freq: {aluno.frequencia}%</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Fichas de Pré-Conselho Recentes */}
+                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                          <Icon name="FileCheck" className="w-4 h-4 text-emerald-600" />
+                          Fichas de Pré-Conselho Recentes
+                        </h3>
+                        <button
+                          onClick={() => setActiveTab('relatorios')}
+                          className="text-xs font-bold text-blue-600 hover:underline"
+                        >
+                          Ver atas
+                        </button>
+                      </div>
+
+                      <div className="space-y-3">
+                        {relatorios.slice(0, 3).map(rel => (
+                          <div key={rel.id} className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between gap-3">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-bold text-slate-900">{rel.turmaNome}</span>
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">
+                                  {rel.disciplinaNome}
+                                </span>
+                              </div>
+                              <p className="text-[11px] text-slate-500 mt-0.5">Docente: {rel.professorNome}</p>
+                            </div>
+                            <button
+                              onClick={() => { setPreviewReport(rel); }}
+                              className="text-xs font-bold bg-white border border-slate-300 hover:bg-slate-50 px-2.5 py-1.5 rounded-lg text-slate-700 flex items-center gap-1"
+                            >
+                              <Icon name="Eye" className="w-3.5 h-3.5" />
+                              Visualizar
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ABA 2: PRÉ-CONSELHO (FICHA DO PROFESSOR, ALUNOS E SÍNTESE) */}
+              {activeTab === 'pre-conselho' && (
+                <div className="space-y-6 animate-fadeIn">
+                  {/* Seletor de Instrumentos */}
+                  <div className="bg-white rounded-2xl p-2 border border-slate-200 shadow-2xs flex flex-wrap gap-2">
+                    <button
+                      onClick={() => setPreConselhoSubTab('PROFESSOR')}
+                      className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+                        preConselhoSubTab === 'PROFESSOR' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'
+                      }`}
+                    >
+                      <Icon name="FileText" className="w-4 h-4" />
+                      <span>Pré-Conselho do Professor (Ficha Docente)</span>
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                        preConselhoSubTab === 'PROFESSOR' ? 'bg-emerald-700 text-white' : 'bg-emerald-100 text-emerald-800'
+                      }`}>
+                        Principal
+                      </span>
+                    </button>
+
+                    <button
+                      onClick={() => setPreConselhoSubTab('ALUNO')}
+                      className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+                        preConselhoSubTab === 'ALUNO' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'
+                      }`}
+                    >
+                      <Icon name="Users" className="w-4 h-4" />
+                      <span>Pré-Conselho dos Alunos (Autoavaliação)</span>
+                    </button>
+
+                    <button
+                      onClick={() => setPreConselhoSubTab('SINTESE')}
+                      className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+                        preConselhoSubTab === 'SINTESE' ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'
+                      }`}
+                    >
+                      <Icon name="Sparkles" className="w-4 h-4" />
+                      <span>Síntese & Pauta do Conselho</span>
+                    </button>
+                  </div>
+
+                  {/* SUB-ABA 1: FICHA DO PROFESSOR (7 ETAPAS) */}
+                  {preConselhoSubTab === 'PROFESSOR' && (
+                    <div className="space-y-6">
+                      {/* Cabeçalho da Ficha */}
+                      <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-2xs">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
+                          <div>
+                            <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 uppercase">
+                              Instrumento Docente Oficial
+                            </span>
+                            <h2 className="text-xl font-black text-slate-900 tracking-tight mt-1.5">
+                              Ficha de Pré-Conselho do Professor
+                            </h2>
+                            <p className="text-xs text-slate-500 mt-0.5">
+                              Diagnóstico de competências, frequência, alunos em atenção e intervenções pedagógicas
+                            </p>
+                          </div>
+
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <button
+                              onClick={() => handleSalvarRelatorio('RASCUNHO')}
+                              className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5"
+                            >
+                              <Icon name="Save" className="w-4 h-4 text-slate-500" />
+                              Salvar Rascunho
+                            </button>
+                            <button
+                              onClick={() => {
+                                setPreviewReport({
+                                  professorNome: currentUser.perfil === 'PROFESSOR' ? currentUser.nome : 'Prof. Carlos Silva',
+                                  turmaNome: currentTurma.nome,
+                                  disciplinaNome: currentDisciplina.nome,
+                                  periodo: PERIODO_ATUAL,
+                                  anoLetivo: ANO_LETIVO_PADRAO,
+                                  respostas: { ...respostasDocente }
+                                });
+                              }}
+                              className="bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-xs"
+                            >
+                              <Icon name="Eye" className="w-4 h-4" />
+                              Visualizar Ficha
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Stepper horizontal das etapas */}
+                        <div className="mt-5">
+                          <div className="flex items-center justify-between text-xs mb-2">
+                            <span className="font-bold text-slate-700">
+                              Etapa {preStep} de 6: <span className="text-emerald-700 font-extrabold">
+                                {['Identificação', 'Desenvolvimento da Turma', 'Alunos em Atenção & Destaque', 'Fatores Intervenientes', 'Encaminhamentos & Ações', 'Despacho & Envio'][preStep - 1]}
+                              </span>
+                            </span>
+                            <span className="text-slate-500 font-semibold">{Math.round((preStep / 6) * 100)}% concluído</span>
+                          </div>
+                          <div className="w-full bg-slate-100 rounded-full h-2">
+                            <div
+                              className="bg-emerald-600 h-2 rounded-full transition-all duration-300"
+                              style={{ width: `${(preStep / 6) * 100}%` }}
+                            />
+                          </div>
+
+                          <div className="grid grid-cols-2 sm:grid-cols-6 gap-2 mt-4">
+                            {['1. Identificação', '2. Turma', '3. Estudantes', '4. Fatores', '5. Ações', '6. Despacho'].map((label, idx) => (
+                              <button
+                                key={idx}
+                                onClick={() => setPreStep(idx + 1)}
+                                className={`px-3 py-2 rounded-xl text-left text-xs font-bold border transition-colors ${
+                                  preStep === idx + 1
+                                    ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                                    : preStep > idx + 1
+                                    ? 'bg-emerald-50 text-emerald-900 border-emerald-200'
+                                    : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                                }`}
+                              >
+                                {label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* CONTEÚDO DA ETAPA DO FORMULÁRIO */}
+                      <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-2xs">
+                        {/* ETAPA 1: IDENTIFICAÇÃO */}
+                        {preStep === 1 && (
+                          <div className="space-y-5 animate-fadeIn">
+                            <h3 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
+                              <span className="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs">1</span>
+                              Identificação do Componente Curricular e Docente
+                            </h3>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                              <div>
+                                <label className="block text-xs font-bold text-slate-700 mb-1">Turma em Avaliação</label>
+                                <select
+                                  value={selectedTurmaId}
+                                  onChange={(e) => setSelectedTurmaId(e.target.value)}
+                                  className="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 font-semibold"
+                                >
+                                  {turmas.map(t => (
+                                    <option key={t.id} value={t.id}>{t.nome} - {t.turno}</option>
+                                  ))}
+                                </select>
+                              </div>
+
+                              <div>
+                                <label className="block text-xs font-bold text-slate-700 mb-1">Componente Curricular</label>
+                                <select
+                                  value={selectedDisciplinaId}
+                                  onChange={(e) => setSelectedDisciplinaId(e.target.value)}
+                                  className="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 font-semibold"
+                                >
+                                  {disciplinas.map(d => (
+                                    <option key={d.id} value={d.id}>{d.nome} ({d.codigo})</option>
+                                  ))}
+                                </select>
+                              </div>
+
+                              <div>
+                                <label className="block text-xs font-bold text-slate-700 mb-1">Professor(a) Responsável</label>
+                                <input
+                                  type="text"
+                                  disabled
+                                  value={currentUser.perfil === 'PROFESSOR' ? currentUser.nome : 'Prof. Carlos Silva'}
+                                  className="w-full bg-slate-100 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-700 font-semibold cursor-not-allowed"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* ETAPA 2: DESENVOLVIMENTO DA TURMA */}
+                        {preStep === 2 && (
+                          <div className="space-y-5 animate-fadeIn">
+                            <h3 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
+                              <span className="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs">2</span>
+                              Diagnóstico de Desenvolvimento Geral da Turma
+                            </h3>
+
+                            <div>
+                              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                                Como você avalia a evolução da turma em termos conceituais e atitudinais neste bimestre?
+                              </label>
+                              <textarea
+                                rows={4}
+                                value={respostasDocente.desenvolvimentoGeral}
+                                onChange={(e) => setRespostasDocente({ ...respostasDocente, desenvolvimentoGeral: e.target.value })}
+                                className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs text-slate-800 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                                Principais defasagens ou dificuldades identificadas nos conteúdos:
+                              </label>
+                              <textarea
+                                rows={3}
+                                value={respostasDocente.dificuldadesGerais}
+                                onChange={(e) => setRespostasDocente({ ...respostasDocente, dificuldadesGerais: e.target.value })}
+                                className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs text-slate-800 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                              />
+                            </div>
+                          </div>
+                        )}
+
+                        {/* ETAPA 3: ESTUDANTES EM ATENÇÃO & DESTAQUE */}
+                        {preStep === 3 && (
+                          <div className="space-y-5 animate-fadeIn">
+                            <h3 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
+                              <span className="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs">3</span>
+                              Levantamento de Estudantes
+                            </h3>
+
+                            <div>
+                              <label className="block text-xs font-bold text-red-900 mb-1.5 flex items-center gap-1.5">
+                                <Icon name="AlertTriangle" className="w-4 h-4 text-red-600" />
+                                Estudantes que necessitam de intervenção pedagógica prioritária / recuperação contínua:
+                              </label>
+                              <textarea
+                                rows={3}
+                                value={respostasDocente.alunosDificuldade}
+                                onChange={(e) => setRespostasDocente({ ...respostasDocente, alunosDificuldade: e.target.value })}
+                                className="w-full bg-red-50/50 border border-red-200 rounded-xl p-3 text-xs text-slate-800 focus:bg-white focus:ring-2 focus:ring-red-500 focus:outline-none"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-xs font-bold text-emerald-900 mb-1.5 flex items-center gap-1.5">
+                                <Icon name="CheckCircle" className="w-4 h-4 text-emerald-600" />
+                                Estudantes com destaque acadêmico, assiduidade e colaboração com a turma:
+                              </label>
+                              <textarea
+                                rows={3}
+                                value={respostasDocente.alunosDestaque}
+                                onChange={(e) => setRespostasDocente({ ...respostasDocente, alunosDestaque: e.target.value })}
+                                className="w-full bg-emerald-50/50 border border-emerald-200 rounded-xl p-3 text-xs text-slate-800 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                              />
+                            </div>
+                          </div>
+                        )}
+
+                        {/* ETAPA 4: FATORES INTERVENIENTES */}
+                        {preStep === 4 && (
+                          <div className="space-y-5 animate-fadeIn">
+                            <h3 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
+                              <span className="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs">4</span>
+                              Fatores Intervenientes na Aprendizagem
+                            </h3>
+
+                            <div>
+                              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                                Frequência, assiduidade, apoio familiar e fatores comportamentais observados:
+                              </label>
+                              <textarea
+                                rows={4}
+                                value={respostasDocente.fatoresAssiduidade}
+                                onChange={(e) => setRespostasDocente({ ...respostasDocente, fatoresAssiduidade: e.target.value })}
+                                className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs text-slate-800 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                              />
+                            </div>
+                          </div>
+                        )}
+
+                        {/* ETAPA 5: ENCAMINHAMENTOS E AÇÕES PEDAGÓGICAS */}
+                        {preStep === 5 && (
+                          <div className="space-y-5 animate-fadeIn">
+                            <h3 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
+                              <span className="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs">5</span>
+                              Ações Pedagógicas e Encaminhamentos Previstos
+                            </h3>
+
+                            <div>
+                              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                                Quais estratégias pedagógicas e propostas de recuperação paralela contínua serão adotadas?
+                              </label>
+                              <textarea
+                                rows={4}
+                                value={respostasDocente.acoesPedagogicas}
+                                onChange={(e) => setRespostasDocente({ ...respostasDocente, acoesPedagogicas: e.target.value })}
+                                className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs text-slate-800 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                              />
+                            </div>
+                          </div>
+                        )}
+
+                        {/* ETAPA 6: DESPACHO E ENVIO OFICIAL */}
+                        {preStep === 6 && (
+                          <div className="space-y-6 animate-fadeIn">
+                            <h3 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
+                              <span className="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs">6</span>
+                              Síntese Geral e Despacho do Professor
+                            </h3>
+
+                            <div>
+                              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                                Parecer síntese final do docente para o Conselho de Classe:
+                              </label>
+                              <textarea
+                                rows={4}
+                                value={respostasDocente.sinteseGeral}
+                                onChange={(e) => setRespostasDocente({ ...respostasDocente, sinteseGeral: e.target.value })}
+                                className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs text-slate-800 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                              />
+                            </div>
+
+                            <div className="p-5 bg-emerald-50 rounded-2xl border border-emerald-200">
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-sm">
+                                  ✓
+                                </div>
+                                <div>
+                                  <h4 className="text-xs font-bold text-emerald-950">Pronto para Envio Institucional</h4>
+                                  <p className="text-[11px] text-emerald-800 mt-0.5">
+                                    Ao clicar em <strong>Enviar Relatório Oficial</strong>, este instrumento será formalmente registrado e ficará disponível para a Coordenação Pedagógica e Direção.
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* BOTÕES DE NAVEGAÇÃO DO STEPPER */}
+                        <div className="mt-6 pt-5 border-t border-slate-100 flex items-center justify-between">
+                          <button
+                            disabled={preStep === 1}
+                            onClick={() => setPreStep(p => Math.max(1, p - 1))}
+                            className="bg-white border border-slate-300 hover:bg-slate-50 disabled:opacity-40 text-slate-700 text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-1.5"
+                          >
+                            <Icon name="ArrowLeft" className="w-4 h-4" />
+                            Anterior
+                          </button>
+
+                          {preStep < 6 ? (
+                            <button
+                              onClick={() => setPreStep(p => Math.min(6, p + 1))}
+                              className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl flex items-center gap-1.5 shadow-xs"
+                            >
+                              Próximo Passo
+                              <Icon name="ArrowRight" className="w-4 h-4" />
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleSalvarRelatorio('ENVIADO')}
+                              className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black px-6 py-2.5 rounded-xl flex items-center gap-2 shadow-md"
+                            >
+                              <Icon name="Send" className="w-4 h-4" />
+                              Enviar Relatório Oficial
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* SUB-ABA 2: PRÉ-CONSELHO DOS ALUNOS */}
+                  {preConselhoSubTab === 'ALUNO' && (
+                    <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-2xs space-y-5 animate-fadeIn">
+                      <div className="border-b border-slate-100 pb-4">
+                        <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-blue-50 text-blue-800 border border-blue-200 uppercase">
+                          Escuta e Protagonismo Estudantil
+                        </span>
+                        <h2 className="text-xl font-black text-slate-900 tracking-tight mt-1.5">
+                          Autoavaliação da Turma (Pré-Conselho Discente)
+                        </h2>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          Percepção dos estudantes sobre o ritmo de estudos, convivência e combinados coletivos
+                        </p>
+                      </div>
+
+                      <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-4">
+                        <div>
+                          <label className="block text-xs font-bold text-slate-900 mb-1">
+                            1. Percepção da Turma sobre o Volume e Ritmo das Atividades
+                          </label>
+                          <textarea
+                            rows={3}
+                            defaultValue="Os alunos consideram o ritmo equilibrado na maior parte das disciplinas, mas apontaram sobrecarga de provas na última semana do bimestre."
+                            className="w-full bg-white border border-slate-300 rounded-xl p-3 text-xs text-slate-800"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-slate-900 mb-1">
+                            2. Disciplinas com Maior Facilidade e Maior Dificuldade
+                          </label>
+                          <textarea
+                            rows={3}
+                            defaultValue="Maior interesse: História e Educação Física (dinâmicas práticas). Maior dificuldade: Matemática (cálculos com frações) e Ciências."
+                            className="w-full bg-white border border-slate-300 rounded-xl p-3 text-xs text-slate-800"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-slate-900 mb-1">
+                            3. Combinados e Compromissos Assumidos pela Turma
+                          </label>
+                          <textarea
+                            rows={3}
+                            defaultValue="Compromisso de reduzir conversas paralelas durante as explicações, pontualidade no retorno do intervalo e respeito ao uso do celular."
+                            className="w-full bg-white border border-slate-300 rounded-xl p-3 text-xs text-slate-800"
+                          />
+                        </div>
+
+                        <button
+                          onClick={() => triggerNotification('Autoavaliação dos estudantes registrada com sucesso!')}
+                          className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-xs"
+                        >
+                          Salvar Registro Discente
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* SUB-ABA 3: SÍNTESE & PAUTA DO CONSELHO */}
+                  {preConselhoSubTab === 'SINTESE' && (
+                    <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-2xs space-y-6 animate-fadeIn">
+                      <div className="border-b border-slate-100 pb-4">
+                        <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-800 border border-indigo-200 uppercase">
+                          Consolidação da Coordenação
+                        </span>
+                        <h2 className="text-xl font-black text-slate-900 tracking-tight mt-1.5">
+                          Síntese do Pré-Conselho & Pauta de Deliberação
+                        </h2>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          Cruzamento das fichas docentes entregues para a turma <strong>{currentTurma.nome}</strong>
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {relatorios.filter(r => r.turmaId === currentTurma.id).map(r => (
+                          <div key={r.id} className="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                            <div className="flex items-center justify-between mb-1.5">
+                              <span className="text-xs font-bold text-slate-900">{r.disciplinaNome}</span>
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                                {r.status}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-600 font-semibold">Docente: {r.professorNome}</p>
+                            <p className="text-[11px] text-slate-500 mt-2 italic line-clamp-3">
+                              "{r.respostas.sinteseGeral || r.respostas.desenvolvimentoGeral}"
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="p-5 bg-indigo-50/60 rounded-2xl border border-indigo-200">
+                        <h4 className="text-xs font-bold text-indigo-950 uppercase tracking-wider">
+                          Pauta Recomendada para a Reunião do Conselho
+                        </h4>
+                        <ul className="text-xs text-slate-700 space-y-2 mt-2 list-disc list-inside">
+                          <li>Discussão de estratégias conjuntas de reforço entre Matemática e Ciências.</li>
+                          <li>Busca ativa com a assistência social para estudantes com frequência abaixo de 75%.</li>
+                          <li>Alinhamento com as lideranças de sala sobre o cronograma bimestral de avaliações.</li>
+                        </ul>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ABA 3: RELATÓRIOS E ATAS */}
+              {activeTab === 'relatorios' && (
+                <div className="space-y-6 animate-fadeIn">
+                  <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                      <h2 className="text-xl font-black text-slate-900 tracking-tight">
+                        Relatórios e Fichas de Pré-Conselho
+                      </h2>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Documentos homologados pela equipe pedagógica para consulta e emissão
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() => setActiveTab('pre-conselho')}
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl flex items-center gap-1.5 shadow-xs"
+                    >
+                      <Icon name="Plus" className="w-4 h-4" />
+                      Novo Relatório Docente
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {relatorios.map(rel => (
+                      <div key={rel.id} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-black text-slate-900">{rel.turmaNome}</span>
+                            <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-800 border border-blue-100">
+                              {rel.disciplinaNome}
+                            </span>
+                          </div>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                            {rel.status}
+                          </span>
+                        </div>
+
+                        <div className="text-xs text-slate-600 space-y-1">
+                          <p><strong className="text-slate-800">Professor(a):</strong> {rel.professorNome}</p>
+                          <p><strong className="text-slate-800">Período:</strong> {rel.periodo} - {rel.anoLetivo}</p>
+                          <p><strong className="text-slate-800">Data de Envio:</strong> {rel.dataEnvio}</p>
+                        </div>
+
+                        <div className="p-3 bg-slate-50 rounded-xl text-xs text-slate-600 italic line-clamp-2 border border-slate-100">
+                          "{rel.respostas?.sinteseGeral || rel.respostas?.desenvolvimentoGeral || 'Sem síntese.'}"
+                        </div>
+
+                        <div className="pt-2 flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => setPreviewReport(rel)}
+                            className="bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold px-3 py-1.5 rounded-xl flex items-center gap-1 shadow-2xs"
+                          >
+                            <Icon name="Eye" className="w-3.5 h-3.5" />
+                            Visualizar
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ABA 4: NOTAS & FREQUÊNCIA INTERATIVAS */}
+              {activeTab === 'notas-frequencia' && (
+                <div className="space-y-6 animate-fadeIn">
+                  <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-2xs">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
+                      <div>
+                        <h2 className="text-xl font-black text-slate-900 tracking-tight">
+                          Lançamento de Notas e Assiduidade
+                        </h2>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          Edite as médias e frequências bimestrais dos estudantes com cálculo automático
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <select
+                          value={selectedTurmaId}
+                          onChange={(e) => setSelectedTurmaId(e.target.value)}
+                          className="bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800"
+                        >
+                          {turmas.map(t => (
+                            <option key={t.id} value={t.id}>{t.nome}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Tabela de Notas Editável */}
+                    <div className="mt-5 overflow-x-auto">
+                      <table className="w-full text-left text-xs">
+                        <thead>
+                          <tr className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200">
+                            <th className="p-3">Matrícula</th>
+                            <th className="p-3">Estudante</th>
+                            <th className="p-3 text-center">Média Atual</th>
+                            <th className="p-3 text-center">Frequência (%)</th>
+                            <th className="p-3 text-center">Situação</th>
+                            <th className="p-3 text-right">Ações</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {alunos.filter(a => a.turmaId === selectedTurmaId).map(aluno => (
+                            <tr key={aluno.id} className="hover:bg-slate-50 transition-colors">
+                              <td className="p-3 text-slate-500 font-mono">{aluno.matricula}</td>
+                              <td className="p-3 font-bold text-slate-900">{aluno.nome}</td>
+                              <td className="p-3 text-center">
+                                <input
+                                  type="number"
+                                  step="0.1"
+                                  min="0"
+                                  max="10"
+                                  defaultValue={aluno.media}
+                                  onBlur={(e) => handleUpdateAlunoNota(aluno.id, e.target.value, aluno.frequencia)}
+                                  className={`w-16 text-center font-bold px-2 py-1 rounded-lg border text-xs ${
+                                    aluno.media < 5 ? 'bg-red-50 text-red-800 border-red-200' : 'bg-slate-50 text-slate-800 border-slate-300'
+                                  }`}
+                                />
+                              </td>
+                              <td className="p-3 text-center">
+                                <input
+                                  type="number"
+                                  min="0"
+                                  max="100"
+                                  defaultValue={aluno.frequencia}
+                                  onBlur={(e) => handleUpdateAlunoNota(aluno.id, aluno.media, e.target.value)}
+                                  className={`w-16 text-center font-bold px-2 py-1 rounded-lg border text-xs ${
+                                    aluno.frequencia < 75 ? 'bg-red-50 text-red-800 border-red-200' : 'bg-slate-50 text-slate-800 border-slate-300'
+                                  }`}
+                                />
+                              </td>
+                              <td className="p-3 text-center">
+                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                  aluno.emAcompanhamento ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800'
+                                }`}>
+                                  {aluno.emAcompanhamento ? 'Atenção' : 'Regular'}
+                                </span>
+                              </td>
+                              <td className="p-3 text-right">
+                                <button
+                                  onClick={() => setSelectedAlunoModal(aluno)}
+                                  className="text-xs font-bold text-blue-600 hover:underline"
+                                >
+                                  Ver Ficha
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ABA 5: ALUNOS & HISTÓRICO */}
+              {activeTab === 'alunos' && (
+                <div className="space-y-6 animate-fadeIn">
+                  <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-2xs">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
+                      <div>
+                        <h2 className="text-xl font-black text-slate-900 tracking-tight">
+                          Histórico e Acompanhamento Discente
+                        </h2>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          Prontuário pedagógico individual de cada estudante da unidade escolar
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <input
+                          type="text"
+                          placeholder="Buscar por nome..."
+                          value={searchAluno}
+                          onChange={(e) => setSearchAluno(e.target.value)}
+                          className="bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium w-48"
+                        />
+                        <button
+                          onClick={() => setFilterApenasAtencao(!filterApenasAtencao)}
+                          className={`px-3 py-2 rounded-xl text-xs font-bold border transition-colors ${
+                            filterApenasAtencao ? 'bg-amber-600 text-white border-amber-600' : 'bg-white text-slate-700 border-slate-300'
+                          }`}
+                        >
+                          {filterApenasAtencao ? 'Apenas Atenção (Ativo)' : 'Filtrar Atenção'}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-5">
+                      {alunos
+                        .filter(a => (searchAluno ? a.nome.toLowerCase().includes(searchAluno.toLowerCase()) : true))
+                        .filter(a => (filterApenasAtencao ? a.emAcompanhamento : true))
+                        .map(aluno => (
+                          <div key={aluno.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+                            <div className="flex items-start justify-between gap-2">
+                              <div>
+                                <h4 className="text-xs font-bold text-slate-900">{aluno.nome}</h4>
+                                <span className="text-[10px] text-slate-500">Matrícula: {aluno.matricula}</span>
+                              </div>
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                aluno.emAcompanhamento ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800'
+                              }`}>
+                                {aluno.emAcompanhamento ? 'Atenção' : 'Regular'}
+                              </span>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-2 text-xs">
+                              <div className="p-2 bg-white rounded-lg border border-slate-100 text-center">
+                                <span className="text-[10px] text-slate-400 block">Média</span>
+                                <span className="font-black text-slate-800">{aluno.media.toFixed(1)}</span>
+                              </div>
+                              <div className="p-2 bg-white rounded-lg border border-slate-100 text-center">
+                                <span className="text-[10px] text-slate-400 block">Frequência</span>
+                                <span className="font-black text-slate-800">{aluno.frequencia}%</span>
+                              </div>
+                            </div>
+
+                            <p className="text-[11px] text-slate-600 italic line-clamp-2">
+                              {aluno.obs}
+                            </p>
+
+                            <button
+                              onClick={() => setSelectedAlunoModal(aluno)}
+                              className="w-full bg-white hover:bg-slate-100 border border-slate-200 text-slate-800 font-bold text-xs py-1.5 rounded-xl transition-colors"
+                            >
+                              Ver Histórico Completo
+                            </button>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ABA 6: ANÁLISE PEDAGÓGICA (GRÁFICOS SVG) */}
+              {activeTab === 'analise' && (
+                <div className="space-y-6 animate-fadeIn">
+                  <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-2xs">
+                    <h2 className="text-xl font-black text-slate-900 tracking-tight">
+                      Painel de Análise Pedagógica
+                    </h2>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Indicadores de rendimento comparativo por turma, componente curricular e assiduidade
+                    </p>
+                  </div>
+
+                  {/* Gráficos em SVG */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Gráfico 1: Médias por Turma */}
+                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs">
+                      <h3 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
+                        <Icon name="TrendingUp" className="w-4 h-4 text-blue-600" />
+                        Médias Comparativas por Turma
+                      </h3>
+
+                      <div className="space-y-3">
+                        {[
+                          { turma: '6º Ano A', media: 7.8, cor: 'bg-emerald-500' },
+                          { turma: '7º Ano A', media: 6.9, cor: 'bg-amber-500' },
+                          { turma: '7º Ano B', media: 7.4, cor: 'bg-blue-500' },
+                          { turma: '8º Ano A', media: 6.8, cor: 'bg-amber-500' },
+                          { turma: '9º Ano A', media: 7.3, cor: 'bg-blue-500' }
+                        ].map((item, idx) => (
+                          <div key={idx} className="space-y-1">
+                            <div className="flex justify-between text-xs font-bold">
+                              <span className="text-slate-700">{item.turma}</span>
+                              <span className="text-slate-900">{item.media.toFixed(1)} / 10.0</span>
+                            </div>
+                            <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
+                              <div
+                                className={`${item.cor} h-3 rounded-full transition-all duration-500`}
+                                style={{ width: `${item.media * 10}%` }}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Gráfico 2: Distribuição de Rendimento */}
+                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs">
+                      <h3 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
+                        <Icon name="PieChart" className="w-4 h-4 text-indigo-600" />
+                        Distribuição do Rendimento Escolar
+                      </h3>
+
+                      <div className="grid grid-cols-3 gap-3 text-center my-4">
+                        <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100">
+                          <span className="text-xl font-black text-emerald-700">68%</span>
+                          <span className="text-[10px] font-bold text-emerald-800 block mt-1">Acima de 7.0</span>
+                        </div>
+                        <div className="p-3 bg-amber-50 rounded-xl border border-amber-100">
+                          <span className="text-xl font-black text-amber-700">22%</span>
+                          <span className="text-[10px] font-bold text-amber-800 block mt-1">Entre 5.0 e 6.9</span>
+                        </div>
+                        <div className="p-3 bg-red-50 rounded-xl border border-red-100">
+                          <span className="text-xl font-black text-red-700">10%</span>
+                          <span className="text-[10px] font-bold text-red-800 block mt-1">Abaixo de 5.0</span>
+                        </div>
+                      </div>
+
+                      <p className="text-xs text-slate-600 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-200">
+                        <strong>Diagnóstico Geral:</strong> 90% dos estudantes encontram-se dentro ou acima da média de aprovação estabelecida pelo regimento escolar (5.0), com foco prioritário de reforço nos 10% em defasagem.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ABA 7: CORPO DOCENTE */}
+              {activeTab === 'professores' && (
+                <div className="space-y-6 animate-fadeIn">
+                  <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-2xs">
+                    <h2 className="text-xl font-black text-slate-900 tracking-tight">
+                      Quadro de Professores & Atribuições
+                    </h2>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Acompanhamento das disciplinas, turmas atendidas e status de envio de pré-conselho
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {USUARIOS_BASE.filter(u => u.perfil === 'PROFESSOR').map(prof => {
+                      const relatoriosProf = relatorios.filter(r => r.professorId === prof.id);
+                      return (
+                        <div key={prof.id} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs space-y-3">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-800 font-bold flex items-center justify-center text-sm">
+                              {prof.nome.charAt(0)}
+                            </div>
+                            <div>
+                              <h4 className="text-xs font-bold text-slate-900">{prof.nome}</h4>
+                              <p className="text-[10px] text-slate-500">{prof.email}</p>
+                            </div>
+                          </div>
+
+                          <div className="text-xs text-slate-600 space-y-1">
+                            <p><strong className="text-slate-800">Turmas:</strong> {prof.turmas?.map(tid => turmas.find(t => t.id === tid)?.nome).join(', ') || 'Todas'}</p>
+                            <p><strong className="text-slate-800">Fichas Entregues:</strong> {relatoriosProf.length} de {prof.turmas?.length || 3}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+            </main>
+          </div>
+
+          {/* MODAL: VISUALIZAR RELATÓRIO OFICIAL (IMPRESSÃO / PDF) */}
+          {previewReport && (
+            <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+              <div className="bg-white rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 shadow-2xl animate-fadeIn space-y-6">
+                <div className="flex items-center justify-between border-b border-slate-200 pb-4 no-print">
+                  <div className="flex items-center gap-2 text-xs font-bold text-slate-600">
+                    <Icon name="FileText" className="w-4 h-4 text-emerald-600" />
+                    <span>Visualização da Ficha de Pré-Conselho</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => window.print()}
+                      className="bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold px-3 py-1.5 rounded-xl flex items-center gap-1.5"
+                    >
+                      <Icon name="Printer" className="w-4 h-4" />
+                      Imprimir / Salvar PDF
+                    </button>
+                    <button
+                      onClick={() => setPreviewReport(null)}
+                      className="text-slate-400 hover:text-slate-600 p-1"
+                    >
+                      <Icon name="X" className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* CABEÇALHO OFICIAL DO DOCUMENTO */}
+                <div className="border-b-2 border-slate-900 pb-4 text-center">
+                  <p className="text-[11px] font-bold text-slate-600 tracking-widest uppercase">Secretaria de Estado da Educação</p>
+                  <h3 className="text-sm font-black text-slate-900 mt-1 uppercase">{ESCOLA_NOME}</h3>
+                  <p className="text-xs text-slate-600">{ESCOLA_MODALIDADE} • ANO LETIVO {previewReport.anoLetivo || ANO_LETIVO_PADRAO}</p>
+                  <h2 className="text-base font-black text-slate-900 mt-3 border-t border-slate-200 pt-2 tracking-wide">
+                    FICHA INDIVIDUAL DE PRÉ-CONSELHO PEDAGÓGICO
+                  </h2>
+                </div>
+
+                {/* DADOS DE IDENTIFICAÇÃO */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 p-4 rounded-xl text-xs">
+                  <div>
+                    <span className="text-slate-500 block text-[10px]">Turma</span>
+                    <strong className="text-slate-900">{previewReport.turmaNome}</strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 block text-[10px]">Disciplina</span>
+                    <strong className="text-slate-900">{previewReport.disciplinaNome}</strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 block text-[10px]">Professor(a)</span>
+                    <strong className="text-slate-900">{previewReport.professorNome}</strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 block text-[10px]">Período</span>
+                    <strong className="text-slate-900">{previewReport.periodo}</strong>
+                  </div>
+                </div>
+
+                {/* CORPO DO DOCUMENTO */}
+                <div className="space-y-4 text-xs">
+                  <div className="p-3.5 bg-white border border-slate-200 rounded-xl">
+                    <strong className="text-slate-900 block mb-1 uppercase text-[11px]">1. Desenvolvimento da Turma:</strong>
+                    <p className="text-slate-700 leading-relaxed">{previewReport.respostas?.desenvolvimentoGeral || 'Não informado.'}</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="p-3.5 bg-red-50/60 border border-red-200 rounded-xl">
+                      <strong className="text-red-950 block mb-1 uppercase text-[11px]">2. Estudantes em Atenção / Dificuldades:</strong>
+                      <p className="text-slate-800 leading-relaxed">{previewReport.respostas?.alunosDificuldade || 'Nenhum estudante apontado.'}</p>
+                    </div>
+
+                    <div className="p-3.5 bg-emerald-50/60 border border-emerald-200 rounded-xl">
+                      <strong className="text-emerald-950 block mb-1 uppercase text-[11px]">3. Estudantes em Destaque:</strong>
+                      <p className="text-slate-800 leading-relaxed">{previewReport.respostas?.alunosDestaque || 'Nenhum estudante apontado.'}</p>
+                    </div>
+                  </div>
+
+                  <div className="p-3.5 bg-white border border-slate-200 rounded-xl">
+                    <strong className="text-slate-900 block mb-1 uppercase text-[11px]">4. Fatores Intervenientes (Frequência & Comportamento):</strong>
+                    <p className="text-slate-700 leading-relaxed">{previewReport.respostas?.fatoresAssiduidade || 'Sem registros complementares.'}</p>
+                  </div>
+
+                  <div className="p-3.5 bg-white border border-slate-200 rounded-xl">
+                    <strong className="text-slate-900 block mb-1 uppercase text-[11px]">5. Ações Pedagógicas e Encaminhamentos:</strong>
+                    <p className="text-slate-700 leading-relaxed">{previewReport.respostas?.acoesPedagogicas || 'Recuperação contínua regular.'}</p>
+                  </div>
+
+                  <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
+                    <strong className="text-slate-900 block mb-1 uppercase text-[11px]">6. Parecer Síntese do Docente:</strong>
+                    <p className="text-slate-800 font-medium leading-relaxed">{previewReport.respostas?.sinteseGeral || 'Homologado sem ressalvas.'}</p>
+                  </div>
+                </div>
+
+                {/* ASSINATURA */}
+                <div className="pt-8 grid grid-cols-2 gap-8 text-center text-xs">
+                  <div>
+                    <div className="border-t border-slate-400 w-48 mx-auto mb-1"></div>
+                    <span className="font-bold text-slate-800">{previewReport.professorNome}</span>
+                    <span className="block text-[10px] text-slate-500">Professor(a) Titular</span>
+                  </div>
+                  <div>
+                    <div className="border-t border-slate-400 w-48 mx-auto mb-1"></div>
+                    <span className="font-bold text-slate-800">Coordenação Pedagógica</span>
+                    <span className="block text-[10px] text-slate-500">Visto do Conselho</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* MODAL: FICHA DETALHADA DO ALUNO */}
+          {selectedAlunoModal && (
+            <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+              <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl animate-fadeIn space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <div>
+                    <h3 className="text-base font-black text-slate-900">{selectedAlunoModal.nome}</h3>
+                    <span className="text-xs text-slate-500">Matrícula: {selectedAlunoModal.matricula}</span>
+                  </div>
+                  <button onClick={() => setSelectedAlunoModal(null)} className="text-slate-400 hover:text-slate-600">
+                    <Icon name="X" className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div className="p-3 bg-slate-50 rounded-xl">
+                    <span className="text-slate-500 block text-[10px]">Média Geral</span>
+                    <strong className="text-base font-black text-slate-900">{selectedAlunoModal.media.toFixed(1)}</strong>
+                  </div>
+                  <div className="p-3 bg-slate-50 rounded-xl">
+                    <span className="text-slate-500 block text-[10px]">Assiduidade</span>
+                    <strong className="text-base font-black text-slate-900">{selectedAlunoModal.frequencia}%</strong>
+                  </div>
+                </div>
+
+                <div className="text-xs text-slate-700 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                  <strong className="block text-slate-900 mb-1">Anotações do Conselho de Classe:</strong>
+                  <p className="leading-relaxed">{selectedAlunoModal.obs}</p>
+                </div>
+
+                <button
+                  onClick={() => setSelectedAlunoModal(null)}
+                  className="w-full bg-slate-900 text-white font-bold text-xs py-2.5 rounded-xl shadow-xs"
+                >
+                  Fechar
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* RODAPÉ */}
+          <footer className="bg-white border-t border-slate-200 py-4 mt-auto text-center text-xs text-slate-500 no-print">
+            <p>
+              {ESCOLA_NOME} • Sistema Autônomo de Pré-Conselho e Conselho de Classe ({ANO_LETIVO_PADRAO})
+            </p>
+          </footer>
+        </div>
+      );
+    }
+
+    // RENDERIZAR NA RAIZ DO DOM
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
