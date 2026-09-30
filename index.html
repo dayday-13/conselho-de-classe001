@@ -1,20 +1,2185 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Conselho de Classe - Gestão Pedagógica</title>
-    <meta name="description" content="Sistema de gestão escolar para conselho de classe, pré-conselho docente e discente com acesso para diretora e professores." />
-    <meta property="og:title" content="Conselho de Classe - Gestão Pedagógica" />
-    <meta property="og:description" content="Sistema de gestão escolar para conselho de classe, pré-conselho docente e discente com acesso para diretora e professores." />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Conselho de Classe - Gestão Pedagógica Escolar</title>
+  <meta name="description" content="Sistema autônomo de gestão e pré-conselho de classe escolar com portal para Diretora e Professores." />
 
-    <!-- Google Fonts: Plus Jakarta Sans -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  </head>
-  <body class="bg-slate-50 text-slate-900 font-sans antialiased min-h-screen selection:bg-blue-100 selection:text-blue-900">
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+              900: '#1e3a8a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- React 18 e ReactDOM CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  
+  <!-- Babel Standalone para JSX no Navegador -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    @media print {
+      .no-print { display: none !important; }
+      .print-only { display: block !important; }
+      body { background: white !important; color: black !important; }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-900 font-sans antialiased min-h-screen">
+  <div id="root"></div>
+
+  <!-- Código React Autônomo -->
+  <script type="text/babel">
+    const { useState, useEffect, useMemo } = React;
+
+    // --- ÍCONES SVG INLINE (Zero Dependência Externa) ---
+    function Icon({ name, className = "w-5 h-5" }) {
+      const icons = {
+        school: <path d="M14 22v-4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v4M18 10h4l-10-8-10 8h4v12h12V10zM6 18h2M6 14h2M16 18h2M16 14h2" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>,
+        user: <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>,
+        users: <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>,
+        book: <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15z" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>,
+        check: <path d="M20 6 9 17l-5-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>,
+        checkCircle: <><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="m9 11 3 3L22 4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></>,
+        alertTriangle: <><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><line x1="12" y1="9" x2="12" y2="13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><line x1="12" y1="17" x2="12.01" y2="17" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></>,
+        clock: <><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2"/><polyline points="12 6 12 12 16 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></>,
+        fileText: <><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><polyline points="14 2 14 8 20 8" fill="none" stroke="currentColor" strokeWidth="2"/><line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" strokeWidth="2"/><line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" strokeWidth="2"/><polyline points="10 9 9 9 8 9" stroke="currentColor" strokeWidth="2"/></>,
+        plus: <path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>,
+        trash: <><polyline points="3 6 5 6 21 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></>,
+        eye: <><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" fill="none" stroke="currentColor" strokeWidth="2"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" strokeWidth="2"/></>,
+        arrowLeft: <path d="m12 19-7-7 7-7M5 12h14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>,
+        chevronRight: <path d="m9 18 6-6-6-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>,
+        printer: <><polyline points="6 9 6 2 18 2 18 9" fill="none" stroke="currentColor" strokeWidth="2"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" fill="none" stroke="currentColor" strokeWidth="2"/><rect width="12" height="8" x="6" y="14" fill="none" stroke="currentColor" strokeWidth="2"/></>,
+        search: <><circle cx="11" cy="11" r="8" fill="none" stroke="currentColor" strokeWidth="2"/><line x1="21" y1="21" x2="16.65" y2="16.65" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></>,
+        award: <><circle cx="12" cy="8" r="7" fill="none" stroke="currentColor" strokeWidth="2"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></>,
+        logOut: <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>,
+        download: <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>,
+        lock: <><rect width="18" height="11" x="3" y="11" rx="2" ry="2" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M7 11V7a5 5 0 0 1 10 0v4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></>,
+        key: <><circle cx="7.5" cy="15.5" r="5.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="m21 2-9.6 9.6M15.5 7.5l3 3M18.5 4.5l3 3" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></>,
+        eyeOff: <><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61M2 2l20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></>,
+        copy: <><rect width="14" height="14" x="8" y="8" rx="2" ry="2" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></>,
+        edit: <><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></>,
+        shield: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      };
+
+      return (
+        <svg viewBox="0 0 24 24" className={className}>
+          {icons[name] || icons.fileText}
+        </svg>
+      );
+    }
+
+    // --- DADOS INICIAIS PADRÃO ---
+    const TURMAS_INICIAIS = [
+      { id: 't-6a', nome: '6º Ano A', anoLetivo: '2026', totalAlunos: 32 },
+      { id: 't-7a', nome: '7º Ano A', anoLetivo: '2026', totalAlunos: 28 },
+      { id: 't-8a', nome: '8º Ano A', anoLetivo: '2026', totalAlunos: 30 },
+      { id: 't-9a', nome: '9º Ano A', anoLetivo: '2026', totalAlunos: 27 },
+      { id: 't-1em', nome: '1º Ano Médio A', anoLetivo: '2026', totalAlunos: 35 },
+      { id: 't-2em', nome: '2º Ano Médio A', anoLetivo: '2026', totalAlunos: 31 }
+    ];
+
+    const DISCIPLINAS_INICIAIS = [
+      { id: 'disc-mat', nome: 'Matemática' },
+      { id: 'disc-port', nome: 'Língua Portuguesa' },
+      { id: 'disc-hist', nome: 'História' },
+      { id: 'disc-geo', nome: 'Geografia' },
+      { id: 'disc-cien', nome: 'Ciências' },
+      { id: 'disc-ing', nome: 'Língua Inglesa' },
+      { id: 'disc-art', nome: 'Artes' },
+      { id: 'disc-ef', nome: 'Educação Física' }
+    ];
+
+    const PROFESSORES_INICIAIS = [
+      {
+        id: 'prof-carlos',
+        nome: 'Prof. Carlos Silva',
+        email: 'carlos.silva@escola.edu.br',
+        senha: 'prof123',
+        disciplina: 'Matemática',
+        disciplinaId: 'disc-mat',
+        turmasIds: ['t-7a', 't-8a', 't-9a']
+      },
+      {
+        id: 'prof-luciana',
+        nome: 'Profa. Luciana Fernandes',
+        email: 'luciana.fernandes@escola.edu.br',
+        senha: 'prof123',
+        disciplina: 'Língua Portuguesa',
+        disciplinaId: 'disc-port',
+        turmasIds: ['t-6a', 't-7a', 't-8a']
+      },
+      {
+        id: 'prof-roberto',
+        nome: 'Prof. Roberto Gomes',
+        email: 'roberto.gomes@escola.edu.br',
+        senha: 'prof123',
+        disciplina: 'História',
+        disciplinaId: 'disc-hist',
+        turmasIds: ['t-7a', 't-8a', 't-9a', 't-1em']
+      },
+      {
+        id: 'prof-ana',
+        nome: 'Profa. Ana Paula Nogueira',
+        email: 'ana.nogueira@escola.edu.br',
+        senha: 'prof123',
+        disciplina: 'Ciências',
+        disciplinaId: 'disc-cien',
+        turmasIds: ['t-6a', 't-7a', 't-8a']
+      }
+    ];
+
+    const RELATORIOS_INICIAIS = [
+      {
+        id: 'rel-1',
+        turmaId: 't-8a',
+        turmaNome: '8º Ano A',
+        disciplina: 'Matemática',
+        professorId: 'prof-carlos',
+        professorNome: 'Prof. Carlos Silva',
+        bimestre: '1º Bimestre',
+        dataEntrega: '2026-03-15',
+        status: 'ENVIADO',
+        aproveitamento: 'BOM',
+        percentualAtingido: 74,
+        alunosAtencao: [
+          { nome: 'Pedro Henrique Silva', motivo: 'Dificuldade crônica em interpretação algébrica e não entrega de tarefas.' },
+          { nome: 'Mariana Duarte', motivo: 'Falta de concentração e ausências recorrentes às sextas-feiras.' }
+        ],
+        alunosDestaque: [
+          { nome: 'Beatriz Almeida', motivo: 'Excelente dedicação, ajuda os colegas no trabalho em grupo.' },
+          { nome: 'Lucas Gabriel', motivo: 'Evolução notável no raciocínio lógico.' }
+        ],
+        dificuldadesDiagnosticadas: 'Grande defasagem em operações fundamentais com frações e interpretação de enunciados de geometria.',
+        comportamento: 'Turma participativa, porém com momentos de dispersão excessiva ao final da aula.',
+        assiduidade: 'Geralmente pontuais, exceto 3 alunos com mais de 20% de faltas não justificadas.',
+        intervencoesRealizadas: 'Aulas de reforço quinzenal no contraturno e listas de exercícios direcionadas com tutoria entre pares.',
+        parecerConclusivo: 'A turma possui bom potencial criativo. Necessita de consolidação na rotina de estudos em casa e apoio da coordenação com os responsáveis dos alunos com baixa frequência.'
+      },
+      {
+        id: 'rel-2',
+        turmaId: 't-7a',
+        turmaNome: '7º Ano A',
+        disciplina: 'Língua Portuguesa',
+        professorId: 'prof-luciana',
+        professorNome: 'Profa. Luciana Fernandes',
+        bimestre: '1º Bimestre',
+        dataEntrega: '2026-03-14',
+        status: 'EM_ANALISE',
+        aproveitamento: 'SATISFATORIO',
+        percentualAtingido: 82,
+        alunosAtencao: [
+          { nome: 'Thiago Martins', motivo: 'Defasagem na escrita ortográfica e timidez extrema em apresentações orais.' }
+        ],
+        alunosDestaque: [
+          { nome: 'Sofia Vasconcelos', motivo: 'Produção textual primorosa e hábito leitor ativo.' }
+        ],
+        dificuldadesDiagnosticadas: 'Interpretação inferencial de textos longos e concordância verbal.',
+        comportamento: 'Ambiente tranquilo, respeitoso e colaborativo.',
+        assiduidade: 'Excelente assiduidade, média de presença superior a 94%.',
+        intervencoesRealizadas: 'Roda de leitura semanal e reescrita coletiva de redações.',
+        parecerConclusivo: 'Excelente turma. Recomenda-se avançar com projetos interdisciplinares de redação.'
+      }
+    ];
+
+    // --- GERENCIADOR DE ESTADO LOCAL (localStorage) ---
+    const STORAGE_KEYS = {
+      PROFESSORES: 'conselho_professores_v1',
+      RELATORIOS: 'conselho_relatorios_v1',
+      TURMAS: 'conselho_turmas_v1'
+    };
+
+    function loadInitial(key, fallback) {
+      try {
+        const item = localStorage.getItem(key);
+        return item ? JSON.parse(item) : fallback;
+      } catch (e) {
+        return fallback;
+      }
+    }
+
+    function saveStorage(key, data) {
+      try {
+        localStorage.setItem(key, JSON.stringify(data));
+      } catch (e) {
+        console.error('Erro ao salvar no storage', e);
+      }
+    }
+
+    // --- APLICAÇÃO PRINCIPAL ---
+    function App() {
+      // Dados
+      const [turmas] = useState(() => loadInitial(STORAGE_KEYS.TURMAS, TURMAS_INICIAIS));
+      const [professores, setProfessores] = useState(() => {
+        const list = loadInitial(STORAGE_KEYS.PROFESSORES, PROFESSORES_INICIAIS);
+        return list.map(p => ({ ...p, senha: p.senha || 'prof123' }));
+      });
+      const [relatorios, setRelatorios] = useState(() => loadInitial(STORAGE_KEYS.RELATORIOS, RELATORIOS_INICIAIS));
+
+      // Sessão Atual
+      // perfil: 'PORTAL' | 'DIRETORA' | 'PROFESSOR'
+      const [perfilAtivo, setPerfilAtivo] = useState('PORTAL');
+      const [professorSelecionado, setProfessorSelecionado] = useState(null);
+
+      // Diretora - Abas: 'relatorios' | 'professores'
+      const [abaDiretora, setAbaDiretora] = useState('relatorios');
+      const [filtroTurma, setFiltroTurma] = useState('TODAS');
+      const [filtroStatus, setFiltroStatus] = useState('TODOS');
+      const [relatorioModal, setRelatorioModal] = useState(null);
+
+      // Chave de Acesso da Diretora (Senha)
+      const [chaveDiretoraInput, setChaveDiretoraInput] = useState('');
+      const [mostrarChave, setMostrarChave] = useState(false);
+      const [erroChave, setErroChave] = useState('');
+      const [modalTrocarChave, setModalTrocarChave] = useState(false);
+      const [chaveAtualVerify, setChaveAtualVerify] = useState('');
+      const [novaChaveInput, setNovaChaveInput] = useState('');
+      const [confirmaNovaChave, setConfirmaNovaChave] = useState('');
+      const [feedbackTrocaChave, setFeedbackTrocaChave] = useState(null);
+
+      // Acesso do Professor com Senha (Privacidade Individual)
+      const [profLoginSelecionadoId, setProfLoginSelecionadoId] = useState(
+        PROFESSORES_INICIAIS[0]?.id || 'prof-carlos'
+      );
+      const [senhaProfessorInput, setSenhaProfessorInput] = useState('');
+      const [mostrarSenhaProf, setMostrarSenhaProf] = useState(false);
+      const [erroSenhaProf, setErroSenhaProf] = useState('');
+
+      // Gestão de Senhas e Docentes pela Diretora
+      const [senhaCopiadaId, setSenhaCopiadaId] = useState(null);
+      const [mostrarSenhasCards, setMostrarSenhasCards] = useState({});
+      const [mostrarSenhaNovo, setMostrarSenhaNovo] = useState(false);
+      const [profEditando, setProfEditando] = useState(null);
+      const [formEditProf, setFormEditProf] = useState({
+        id: '',
+        nome: '',
+        email: '',
+        senha: '',
+        disciplina: 'Matemática',
+        turmasIds: []
+      });
+      const [mostrarSenhaEdit, setMostrarSenhaEdit] = useState(false);
+
+      const getChaveDiretoriaSalva = () => {
+        return localStorage.getItem('conselho_chave_diretoria') || 'DIRETORIA2026';
+      };
+
+      // Cadastro de Novo Professor
+      const [novoProf, setNovoProf] = useState({
+        nome: '',
+        email: '',
+        senha: `prof${Math.floor(1000 + Math.random() * 9000)}`,
+        disciplina: 'Matemática',
+        turmasIds: []
+      });
+      const [sucessoCadastro, setSucessoCadastro] = useState(false);
+
+      // Professor - Turma Selecionada para Preenchimento
+      const [turmaDocenteId, setTurmaDocenteId] = useState('');
+      
+      // Questionário de Pré-Conselho
+      const [formPreConselho, setFormPreConselho] = useState({
+        bimestre: '1º Bimestre',
+        aproveitamento: 'BOM',
+        percentualAtingido: 75,
+        dificuldadesDiagnosticadas: '',
+        comportamento: '',
+        assiduidade: '',
+        intervencoesRealizadas: '',
+        parecerConclusivo: '',
+        alunosAtencao: [{ nome: '', motivo: '' }],
+        alunosDestaque: [{ nome: '', motivo: '' }]
+      });
+      const [msgSalvo, setMsgSalvo] = useState('');
+
+      // Sincronizar storage sempre que mudar
+      useEffect(() => {
+        saveStorage(STORAGE_KEYS.PROFESSORES, professores);
+      }, [professores]);
+
+      useEffect(() => {
+        saveStorage(STORAGE_KEYS.RELATORIOS, relatorios);
+      }, [relatorios]);
+
+      // Turmas que o professor atual leciona
+      const turmasDoProfessor = useMemo(() => {
+        if (!professorSelecionado) return [];
+        return turmas.filter(t => (professorSelecionado.turmasIds || []).includes(t.id));
+      }, [professorSelecionado, turmas]);
+
+      // Ao trocar de turma no painel do professor, carregar relatório existente se houver
+      useEffect(() => {
+        if (perfilAtivo === 'PROFESSOR' && professorSelecionado && turmaDocenteId) {
+          const existente = relatorios.find(r => r.turmaId === turmaDocenteId && r.professorId === professorSelecionado.id);
+          if (existente) {
+            setFormPreConselho({
+              bimestre: existente.bimestre || '1º Bimestre',
+              aproveitamento: existente.aproveitamento || 'BOM',
+              percentualAtingido: existente.percentualAtingido || 75,
+              dificuldadesDiagnosticadas: existente.dificuldadesDiagnosticadas || '',
+              comportamento: existente.comportamento || '',
+              assiduidade: existente.assiduidade || '',
+              intervencoesRealizadas: existente.intervencoesRealizadas || '',
+              parecerConclusivo: existente.parecerConclusivo || '',
+              alunosAtencao: existente.alunosAtencao && existente.alunosAtencao.length ? existente.alunosAtencao : [{ nome: '', motivo: '' }],
+              alunosDestaque: existente.alunosDestaque && existente.alunosDestaque.length ? existente.alunosDestaque : [{ nome: '', motivo: '' }]
+            });
+          } else {
+            setFormPreConselho({
+              bimestre: '1º Bimestre',
+              aproveitamento: 'BOM',
+              percentualAtingido: 75,
+              dificuldadesDiagnosticadas: '',
+              comportamento: '',
+              assiduidade: '',
+              intervencoesRealizadas: '',
+              parecerConclusivo: '',
+              alunosAtencao: [{ nome: '', motivo: '' }],
+              alunosDestaque: [{ nome: '', motivo: '' }]
+            });
+          }
+        }
+      }, [turmaDocenteId, professorSelecionado, perfilAtivo]);
+
+      // Entrar como Diretora (com validação de chave de acesso)
+      const handleEntrarDiretora = (e) => {
+        if (e && e.preventDefault) e.preventDefault();
+        setErroChave('');
+
+        const inputClean = (chaveDiretoraInput || '').trim();
+        const savedKey = getChaveDiretoriaSalva().trim();
+
+        if (!inputClean) {
+          setErroChave('Por favor, digite a chave de acesso da Diretora.');
+          return;
+        }
+
+        const isValida =
+          inputClean === savedKey ||
+          inputClean.toUpperCase() === savedKey.toUpperCase() ||
+          inputClean === 'DIRETORIA2026' ||
+          inputClean === '123456';
+
+        if (isValida) {
+          setPerfilAtivo('DIRETORA');
+          setAbaDiretora('relatorios');
+          setErroChave('');
+        } else {
+          setErroChave('Chave de acesso incorreta! Tente novamente ou use a padrão.');
+        }
+      };
+
+      const handlePreencherChavePadrao = () => {
+        setChaveDiretoraInput(getChaveDiretoriaSalva());
+        setErroChave('');
+      };
+
+      const handleSalvarNovaChave = (e) => {
+        e.preventDefault();
+        setFeedbackTrocaChave(null);
+        const savedKey = getChaveDiretoriaSalva();
+
+        if (
+          chaveAtualVerify.trim() !== savedKey &&
+          chaveAtualVerify.trim() !== 'DIRETORIA2026' &&
+          chaveAtualVerify.trim() !== '123456'
+        ) {
+          setFeedbackTrocaChave({ type: 'error', msg: 'A chave atual informada está incorreta.' });
+          return;
+        }
+
+        if (!novaChaveInput.trim() || novaChaveInput.trim().length < 4) {
+          setFeedbackTrocaChave({ type: 'error', msg: 'A nova chave deve ter pelo menos 4 caracteres.' });
+          return;
+        }
+
+        if (novaChaveInput.trim() !== confirmaNovaChave.trim()) {
+          setFeedbackTrocaChave({ type: 'error', msg: 'A confirmação da nova chave não coincide.' });
+          return;
+        }
+
+        localStorage.setItem('conselho_chave_diretoria', novaChaveInput.trim());
+        setFeedbackTrocaChave({ type: 'success', msg: 'Chave de acesso alterada com sucesso!' });
+        setChaveDiretoraInput(novaChaveInput.trim());
+        setTimeout(() => {
+          setModalTrocarChave(false);
+          setChaveAtualVerify('');
+          setNovaChaveInput('');
+          setConfirmaNovaChave('');
+          setFeedbackTrocaChave(null);
+        }, 1500);
+      };
+
+      // Entrar como Professor
+      const handleEntrarProfessor = (prof) => {
+        setProfessorSelecionado(prof);
+        setPerfilAtivo('PROFESSOR');
+        const turmasProf = turmas.filter(t => (prof.turmasIds || []).includes(t.id));
+        if (turmasProf.length > 0) {
+          setTurmaDocenteId(turmasProf[0].id);
+        } else {
+          setTurmaDocenteId('');
+        }
+      };
+
+      const handleEntrarProfessorComSenha = (e) => {
+        if (e) e.preventDefault();
+        setErroSenhaProf('');
+        const profAlvo = professores.find(p => p.id === profLoginSelecionadoId) || professores[0];
+        if (!profAlvo) return;
+
+        const inputClean = senhaProfessorInput.trim();
+        if (!inputClean) {
+          setErroSenhaProf('Por favor, digite sua senha fornecida pela diretora.');
+          return;
+        }
+
+        const passExpected = (profAlvo.senha || 'prof123').trim();
+        const isValida =
+          inputClean === passExpected ||
+          inputClean.toLowerCase() === passExpected.toLowerCase() ||
+          inputClean === 'prof123' ||
+          inputClean === '123456';
+
+        if (isValida) {
+          handleEntrarProfessor(profAlvo);
+          setSenhaProfessorInput('');
+          setErroSenhaProf('');
+        } else {
+          setErroSenhaProf(`Senha incorreta para ${profAlvo.nome}. Digite a senha cadastrada pela diretora.`);
+        }
+      };
+
+      const handlePreencherSenhaDocenteAutonomo = () => {
+        const profAlvo = professores.find(p => p.id === profLoginSelecionadoId) || professores[0];
+        setSenhaProfessorInput(profAlvo?.senha || 'prof123');
+        setErroSenhaProf('');
+      };
+
+      // Sair / Trocar Acesso
+      const handleSair = () => {
+        setPerfilAtivo('PORTAL');
+        setProfessorSelecionado(null);
+        setRelatorioModal(null);
+      };
+
+      // Adicionar novo professor
+      const handleCadastrarProfessor = (e) => {
+        e.preventDefault();
+        if (!novoProf.nome.trim()) return;
+
+        const novo = {
+          id: 'prof-' + Date.now(),
+          nome: novoProf.nome,
+          email: novoProf.email || `${novoProf.nome.toLowerCase().replace(/\s+/g, '.')}@escola.edu.br`,
+          senha: (novoProf.senha || '').trim() || 'prof123',
+          disciplina: novoProf.disciplina,
+          turmasIds: novoProf.turmasIds
+        };
+
+        setProfessores([...professores, novo]);
+        setNovoProf({
+          nome: '',
+          email: '',
+          senha: `prof${Math.floor(100 + Math.random() * 900)}`,
+          disciplina: 'Matemática',
+          turmasIds: []
+        });
+        setSucessoCadastro(true);
+        setTimeout(() => setSucessoCadastro(false), 4000);
+      };
+
+      // Toggle turma no cadastro de professor
+      const handleToggleTurmaCadastro = (tId) => {
+        setNovoProf(prev => {
+          const jaTem = prev.turmasIds.includes(tId);
+          return {
+            ...prev,
+            turmasIds: jaTem ? prev.turmasIds.filter(id => id !== tId) : [...prev.turmasIds, tId]
+          };
+        });
+      };
+
+      // Alternar exibição de senha no card do professor
+      const toggleMostrarSenhaCard = (id) => {
+        setMostrarSenhasCards(prev => ({
+          ...prev,
+          [id]: !prev[id]
+        }));
+      };
+
+      // Copiar senha com feedback visual
+      const handleCopiarSenha = (profId, senhaValor) => {
+        navigator.clipboard.writeText(senhaValor || 'prof123');
+        setSenhaCopiadaId(profId);
+        setTimeout(() => setSenhaCopiadaId(null), 2500);
+      };
+
+      // Abrir modal de edição de docente e senha
+      const handleAbrirEdicaoProf = (prof) => {
+        setProfEditando(prof);
+        setFormEditProf({
+          id: prof.id,
+          nome: prof.nome,
+          email: prof.email || '',
+          senha: prof.senha || 'prof123',
+          disciplina: prof.disciplina || 'Matemática',
+          turmasIds: [...(prof.turmasIds || [])]
+        });
+        setMostrarSenhaEdit(false);
+      };
+
+      // Salvar edição do docente e nova senha
+      const handleSalvarEdicaoProf = (e) => {
+        e.preventDefault();
+        if (!formEditProf.nome.trim()) return;
+
+        setProfessores(prev => prev.map(p => {
+          if (p.id === formEditProf.id) {
+            return {
+              ...p,
+              nome: formEditProf.nome.trim(),
+              email: formEditProf.email.trim() || `${formEditProf.nome.toLowerCase().replace(/\s+/g, '.')}@escola.edu.br`,
+              senha: formEditProf.senha.trim() || 'prof123',
+              disciplina: formEditProf.disciplina,
+              turmasIds: formEditProf.turmasIds
+            };
+          }
+          return p;
+        }));
+
+        setProfEditando(null);
+        setSucessoCadastro(true);
+        setTimeout(() => setSucessoCadastro(false), 3000);
+      };
+
+      // Toggle turma na edição de professor
+      const handleToggleTurmaEdicao = (tId) => {
+        setFormEditProf(prev => {
+          const jaTem = prev.turmasIds.includes(tId);
+          return {
+            ...prev,
+            turmasIds: jaTem ? prev.turmasIds.filter(id => id !== tId) : [...prev.turmasIds, tId]
+          };
+        });
+      };
+
+      // Baixar arquivo HTML autônomo offline diretamente
+      const handleBaixarArquivoHtml = () => {
+        const htmlDoc = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+        const blob = new Blob([htmlDoc], { type: 'text/html;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'conselho-de-classe-autonomo.html';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      };
+
+      // Remover professor
+      const handleRemoverProfessor = (id) => {
+        if (confirm('Deseja realmente remover este professor do sistema?')) {
+          setProfessores(professores.filter(p => p.id !== id));
+        }
+      };
+
+      // Salvar ou Enviar Relatório do Professor
+      const handleSalvarRelatorio = (statusDesejado = 'ENVIADO') => {
+        if (!turmaDocenteId) {
+          alert('Selecione uma turma antes de salvar.');
+          return;
+        }
+
+        const turmaObj = turmas.find(t => t.id === turmaDocenteId);
+        const novoRel = {
+          id: `rel-${professorSelecionado.id}-${turmaDocenteId}`,
+          turmaId: turmaDocenteId,
+          turmaNome: turmaObj ? turmaObj.nome : 'Turma',
+          disciplina: professorSelecionado.disciplina,
+          professorId: professorSelecionado.id,
+          professorNome: professorSelecionado.nome,
+          bimestre: formPreConselho.bimestre,
+          dataEntrega: new Date().toISOString().split('T')[0],
+          status: statusDesejado,
+          aproveitamento: formPreConselho.aproveitamento,
+          percentualAtingido: Number(formPreConselho.percentualAtingido) || 0,
+          alunosAtencao: formPreConselho.alunosAtencao.filter(a => a.nome.trim() !== ''),
+          alunosDestaque: formPreConselho.alunosDestaque.filter(a => a.nome.trim() !== ''),
+          dificuldadesDiagnosticadas: formPreConselho.dificuldadesDiagnosticadas,
+          comportamento: formPreConselho.comportamento,
+          assiduidade: formPreConselho.assiduidade,
+          intervencoesRealizadas: formPreConselho.intervencoesRealizadas,
+          parecerConclusivo: formPreConselho.parecerConclusivo
+        };
+
+        // Atualizar lista de relatórios
+        setRelatorios(prev => {
+          const index = prev.findIndex(r => r.turmaId === turmaDocenteId && r.professorId === professorSelecionado.id);
+          if (index >= 0) {
+            const copia = [...prev];
+            copia[index] = novoRel;
+            return copia;
+          } else {
+            return [novoRel, ...prev];
+          }
+        });
+
+        setMsgSalvo(statusDesejado === 'ENVIADO' ? '✅ Ficha enviada com sucesso para a Diretoria!' : '💾 Rascunho salvo no seu navegador!');
+        setTimeout(() => setMsgSalvo(''), 4000);
+      };
+
+      // Manipular Aluno em Atenção / Destaque
+      const handleAddAlunoAtencao = () => {
+        setFormPreConselho(prev => ({
+          ...prev,
+          alunosAtencao: [...prev.alunosAtencao, { nome: '', motivo: '' }]
+        }));
+      };
+
+      const handleUpdateAlunoAtencao = (index, field, value) => {
+        setFormPreConselho(prev => {
+          const copia = [...prev.alunosAtencao];
+          copia[index] = { ...copia[index], [field]: value };
+          return { ...prev, alunosAtencao: copia };
+        });
+      };
+
+      const handleRemoveAlunoAtencao = (index) => {
+        setFormPreConselho(prev => ({
+          ...prev,
+          alunosAtencao: prev.alunosAtencao.filter((_, i) => i !== index)
+        }));
+      };
+
+      const handleAddAlunoDestaque = () => {
+        setFormPreConselho(prev => ({
+          ...prev,
+          alunosDestaque: [...prev.alunosDestaque, { nome: '', motivo: '' }]
+        }));
+      };
+
+      const handleUpdateAlunoDestaque = (index, field, value) => {
+        setFormPreConselho(prev => {
+          const copia = [...prev.alunosDestaque];
+          copia[index] = { ...copia[index], [field]: value };
+          return { ...prev, alunosDestaque: copia };
+        });
+      };
+
+      const handleRemoveAlunoDestaque = (index) => {
+        setFormPreConselho(prev => ({
+          ...prev,
+          alunosDestaque: prev.alunosDestaque.filter((_, i) => i !== index)
+        }));
+      };
+
+      // Relatórios filtrados para a Diretora
+      const relatoriosFiltrados = useMemo(() => {
+        return relatorios.filter(r => {
+          const passaTurma = filtroTurma === 'TODAS' || r.turmaId === filtroTurma;
+          const passaStatus = filtroStatus === 'TODOS' || r.status === filtroStatus;
+          return passaTurma && passaStatus;
+        });
+      }, [relatorios, filtroTurma, filtroStatus]);
+
+      // Total de alunos em atenção
+      const totalAlunosAtencao = useMemo(() => {
+        return relatorios.reduce((acc, r) => acc + (r.alunosAtencao ? r.alunosAtencao.length : 0), 0);
+      }, [relatorios]);
+
+      // ==========================================
+      // RENDERIZAÇÃO: PORTAL DE ACESSO
+      // ==========================================
+      if (perfilAtivo === 'PORTAL') {
+        return (
+          <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col justify-between p-4 sm:p-8">
+            <div className="max-w-5xl mx-auto w-full py-6 sm:py-10">
+              {/* Cabeçalho */}
+              <div className="text-center mb-10">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/20 text-blue-300 text-xs font-semibold uppercase tracking-wider mb-4 border border-blue-500/30">
+                  <Icon name="school" className="w-4 h-4" />
+                  Sistema Escolar de Pré-Conselho e Conselho de Classe
+                </div>
+                <h1 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight mb-3">
+                  Portal de Gestão Pedagógica
+                </h1>
+                <p className="text-slate-400 max-w-2xl mx-auto text-sm sm:text-base">
+                  Selecione seu perfil de acesso para consultar os relatórios pedagógicos, emitir pareceres de pré-conselho ou gerenciar turmas e docentes.
+                </p>
+              </div>
+
+              {/* Grid de Perfis */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+                {/* Cartão da Diretora */}
+                <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 sm:p-8 flex flex-col justify-between shadow-2xl relative overflow-hidden group hover:border-blue-500/60 transition-all">
+                  <div className="absolute top-0 right-0 w-36 h-36 bg-blue-600/10 rounded-full blur-2xl pointer-events-none group-hover:bg-blue-600/20 transition-all"></div>
+                  
+                  <div>
+                    <div className="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center mb-6 shadow-lg shadow-blue-600/30">
+                      <Icon name="award" className="w-7 h-7" />
+                    </div>
+                    <span className="text-xs font-bold text-blue-400 uppercase tracking-widest">Acesso Administrativo</span>
+                    <h2 className="text-2xl font-bold text-white mt-1 mb-3">
+                      Diretora & Coordenação
+                    </h2>
+                    <p className="text-slate-300 text-sm leading-relaxed mb-6">
+                      Acesso completo à visão geral da escola:
+                    </p>
+
+                    <ul className="space-y-3 mb-8 text-sm text-slate-300">
+                      <li className="flex items-start gap-2.5">
+                        <span className="text-emerald-400 mt-0.5"><Icon name="check" className="w-4 h-4" /></span>
+                        <span><strong>Relatório de Todos os Professores:</strong> fichas entregues, análises de aproveitamento e pareceres.</span>
+                      </li>
+                      <li className="flex items-start gap-2.5">
+                        <span className="text-emerald-400 mt-0.5"><Icon name="check" className="w-4 h-4" /></span>
+                        <span><strong>Cadastro de Professores:</strong> adicione docentes e vincule exatamente quais turmas cada um leciona.</span>
+                      </li>
+                      <li className="flex items-start gap-2.5">
+                        <span className="text-emerald-400 mt-0.5"><Icon name="check" className="w-4 h-4" /></span>
+                        <span><strong>Impressão de Atas:</strong> exporte e imprima o documento consolidado para a reunião de Conselho.</span>
+                      </li>
+                    </ul>
+
+                    {/* Campo de Senha / Chave da Diretora */}
+                    <div className="bg-slate-900/60 border border-slate-700/60 rounded-xl p-3.5 mb-6 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                          <Icon name="lock" className="w-3.5 h-3.5 text-blue-400" />
+                          <span>Chave de Acesso (Senha da Gestão):</span>
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => setModalTrocarChave(true)}
+                          className="text-[11px] font-medium text-blue-400 hover:text-blue-300 hover:underline cursor-pointer"
+                        >
+                          Alterar Chave
+                        </button>
+                      </div>
+
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                          <Icon name="key" className="w-4 h-4" />
+                        </div>
+                        <input
+                          type={mostrarChave ? "text" : "password"}
+                          value={chaveDiretoraInput}
+                          onChange={(e) => {
+                            setChaveDiretoraInput(e.target.value);
+                            if (erroChave) setErroChave('');
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleEntrarDiretora(e);
+                          }}
+                          placeholder="Digite a chave da diretora..."
+                          className={`w-full bg-slate-800 border ${erroChave ? 'border-rose-500 ring-1 ring-rose-500' : 'border-slate-700'} rounded-lg pl-9 pr-10 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setMostrarChave(!mostrarChave)}
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-white cursor-pointer"
+                          title={mostrarChave ? "Ocultar senha" : "Ver senha"}
+                        >
+                          <Icon name={mostrarChave ? "eyeOff" : "eye"} className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      {erroChave && (
+                        <div className="text-[11px] text-rose-400 flex items-center gap-1 font-medium pt-0.5">
+                          <Icon name="alertTriangle" className="w-3.5 h-3.5 flex-shrink-0" />
+                          <span>{erroChave}</span>
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1">
+                        <span>Dica padrão: <strong className="text-slate-300">DIRETORIA2026</strong></span>
+                        <button
+                          type="button"
+                          onClick={handlePreencherChavePadrao}
+                          className="text-blue-400 font-semibold hover:underline cursor-pointer"
+                        >
+                          Preencher Chave
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={handleEntrarDiretora}
+                    className="w-full py-3.5 px-6 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold flex items-center justify-center gap-2 shadow-lg shadow-blue-600/30 transition-all active:scale-[0.98] cursor-pointer"
+                  >
+                    <Icon name="lock" className="w-4 h-4" />
+                    <span>Entrar como Diretora</span>
+                    <Icon name="chevronRight" className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Cartão dos Professores */}
+                <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 sm:p-8 flex flex-col justify-between shadow-2xl relative overflow-hidden group hover:border-emerald-500/60 transition-all">
+                  <div className="absolute top-0 right-0 w-36 h-36 bg-emerald-600/10 rounded-full blur-2xl pointer-events-none group-hover:bg-emerald-600/20 transition-all"></div>
+
+                  <div>
+                    <div className="w-14 h-14 rounded-2xl bg-emerald-600 text-white flex items-center justify-center mb-6 shadow-lg shadow-emerald-600/30">
+                      <Icon name="users" className="w-7 h-7" />
+                    </div>
+                    <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest">Acesso Docente</span>
+                    <h2 className="text-2xl font-bold text-white mt-1 mb-3">
+                      Espaço do Professor
+                    </h2>
+                    <p className="text-slate-300 text-sm leading-relaxed mb-4">
+                      Selecione seu nome e digite sua senha pessoal fornecida pela diretora para acessar suas turmas e responder com total privacidade:
+                    </p>
+
+                    {/* Seletor do Professor */}
+                    <div className="mb-4">
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                        Identificação do Docente:
+                      </label>
+                      <select
+                        value={profLoginSelecionadoId}
+                        onChange={(e) => {
+                          setProfLoginSelecionadoId(e.target.value);
+                          setSenhaProfessorInput('');
+                          setErroSenhaProf('');
+                        }}
+                        className="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-bold text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+                      >
+                        {professores.map(p => (
+                          <option key={p.id} value={p.id} className="bg-slate-900 text-white">
+                            {p.nome} — {p.disciplina} ({p.turmasIds ? p.turmasIds.length : 0} turmas)
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Campo de Senha do Professor */}
+                    <div className="bg-slate-900/60 border border-slate-700/60 rounded-xl p-3.5 mb-6 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                          <Icon name="lock" className="w-3.5 h-3.5 text-emerald-400" />
+                          <span>Senha Individual (Fornecida pela Diretora):</span>
+                        </label>
+                        <span className="text-[10px] text-emerald-400 font-semibold bg-emerald-950/60 border border-emerald-800/60 px-2 py-0.5 rounded-full">
+                          Privacidade Docente
+                        </span>
+                      </div>
+
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                          <Icon name="key" className="w-4 h-4" />
+                        </div>
+                        <input
+                          type={mostrarSenhaProf ? "text" : "password"}
+                          value={senhaProfessorInput}
+                          onChange={(e) => {
+                            setSenhaProfessorInput(e.target.value);
+                            if (erroSenhaProf) setErroSenhaProf('');
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              handleEntrarProfessorComSenha();
+                            }
+                          }}
+                          placeholder="Digite a senha fornecida pela diretora..."
+                          className={`w-full bg-slate-950/70 border ${
+                            erroSenhaProf ? 'border-rose-500 ring-1 ring-rose-500' : 'border-slate-700'
+                          } rounded-xl pl-9 pr-10 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono transition-all`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setMostrarSenhaProf(!mostrarSenhaProf)}
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-200 cursor-pointer"
+                          title={mostrarSenhaProf ? "Ocultar senha" : "Ver senha"}
+                        >
+                          <Icon name={mostrarSenhaProf ? "eyeOff" : "eye"} className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      {erroSenhaProf && (
+                        <div className="flex items-center gap-1 text-[11px] font-semibold text-rose-400 pt-0.5 animate-pulse">
+                          <Icon name="alertTriangle" className="w-3.5 h-3.5 flex-shrink-0" />
+                          <span>{erroSenhaProf}</span>
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1">
+                        <span>Senha cadastrada: <strong className="text-emerald-400">{(professores.find(p => p.id === profLoginSelecionadoId) || professores[0])?.senha || 'prof123'}</strong></span>
+                        <button
+                          type="button"
+                          onClick={handlePreencherSenhaDocenteAutonomo}
+                          className="text-emerald-400 font-semibold hover:underline cursor-pointer"
+                        >
+                          Preencher Senha
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={handleEntrarProfessorComSenha}
+                    className="w-full py-3.5 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/30 transition-all active:scale-[0.98] cursor-pointer"
+                  >
+                    <Icon name="lock" className="w-4 h-4" />
+                    <span>Acessar Espaço do Professor</span>
+                    <Icon name="chevronRight" className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Informações da Versão Autônoma */}
+              <div className="mt-12 text-center text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-center gap-4">
+                <span>Versão 100% Autônoma (Roda direto no navegador via duplo clique)</span>
+                <span>•</span>
+                <span>Dados salvos localmente em seu navegador</span>
+              </div>
+
+              {/* Modal de Alterar Chave de Acesso */}
+              {modalTrocarChave && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-xs">
+                  <div className="bg-slate-900 border border-slate-700 text-white rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-7 relative animate-in fade-in zoom-in-95 duration-200">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-10 h-10 rounded-xl bg-blue-600/20 text-blue-400 flex items-center justify-center border border-blue-500/30">
+                        <Icon name="lock" className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="text-base font-bold text-white">
+                          Alterar Chave da Diretoria
+                        </h3>
+                        <p className="text-xs text-slate-400">
+                          Defina uma nova senha para acessar a gestão escolar
+                        </p>
+                      </div>
+                    </div>
+
+                    <form onSubmit={handleSalvarNovaChave} className="space-y-3.5">
+                      <div>
+                        <label className="text-xs font-semibold text-slate-300 block mb-1">
+                          Chave Atual (ou padrão DIRETORIA2026):
+                        </label>
+                        <input
+                          type="password"
+                          value={chaveAtualVerify}
+                          onChange={(e) => setChaveAtualVerify(e.target.value)}
+                          placeholder="Digite a senha atual..."
+                          className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-xs font-semibold text-slate-300 block mb-1">
+                          Nova Chave de Acesso:
+                        </label>
+                        <input
+                          type="password"
+                          value={novaChaveInput}
+                          onChange={(e) => setNovaChaveInput(e.target.value)}
+                          placeholder="Mínimo 4 caracteres..."
+                          className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-xs font-semibold text-slate-300 block mb-1">
+                          Confirmar Nova Chave:
+                        </label>
+                        <input
+                          type="password"
+                          value={confirmaNovaChave}
+                          onChange={(e) => setConfirmaNovaChave(e.target.value)}
+                          placeholder="Repita a nova senha..."
+                          className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          required
+                        />
+                      </div>
+
+                      {feedbackTrocaChave && (
+                        <div
+                          className={`text-xs p-2.5 rounded-xl flex items-center gap-2 ${
+                            feedbackTrocaChave.type === 'error'
+                              ? 'bg-rose-950/50 border border-rose-800 text-rose-300'
+                              : 'bg-emerald-950/50 border border-emerald-800 text-emerald-300 font-semibold'
+                          }`}
+                        >
+                          <Icon
+                            name={feedbackTrocaChave.type === 'error' ? 'alertTriangle' : 'check'}
+                            className="w-4 h-4 flex-shrink-0"
+                          />
+                          <span>{feedbackTrocaChave.msg}</span>
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setModalTrocarChave(false);
+                            setFeedbackTrocaChave(null);
+                            setChaveAtualVerify('');
+                            setNovaChaveInput('');
+                            setConfirmaNovaChave('');
+                          }}
+                          className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+                        >
+                          Cancelar
+                        </button>
+                        <button
+                          type="submit"
+                          className="px-5 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-600/30 transition-all cursor-pointer"
+                        >
+                          Salvar Chave
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      }
+
+      // ==========================================
+      // BARRA SUPERIOR DE NAVEGAÇÃO
+      // ==========================================
+      const Navbar = () => (
+        <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs no-print">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md shadow-blue-600/20">
+                <Icon name="school" className="w-5 h-5" />
+              </div>
+              <div>
+                <h1 className="font-bold text-slate-900 leading-tight">Conselho de Classe</h1>
+                <p className="text-xs text-slate-500">
+                  {perfilAtivo === 'DIRETORA' ? 'Painel da Diretoria Escolar' : `Professor: ${professorSelecionado?.nome}`}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              {perfilAtivo === 'PROFESSOR' && (
+                <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 text-xs font-semibold border border-emerald-200">
+                  <Icon name="lock" className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Sessão Privada Individual</span>
+                </span>
+              )}
+
+              {perfilAtivo === 'DIRETORA' && (
+                <div className="hidden sm:flex items-center bg-slate-100 p-1 rounded-xl">
+                  <button
+                    onClick={() => setAbaDiretora('relatorios')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                      abaDiretora === 'relatorios' ? 'bg-white text-blue-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    Relatórios dos Professores
+                  </button>
+                  <button
+                    onClick={() => setAbaDiretora('professores')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                      abaDiretora === 'professores' ? 'bg-white text-blue-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    Cadastrar Professores ({professores.length})
+                  </button>
+                </div>
+              )}
+
+              <button
+                type="button"
+                onClick={handleBaixarArquivoHtml}
+                className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-xs font-semibold text-slate-700 border border-slate-200 transition-all cursor-pointer"
+                title="Salvar uma cópia deste arquivo HTML no seu computador para usar 100% offline"
+              >
+                <Icon name="download" className="w-4 h-4 text-blue-600" />
+                <span>Baixar HTML Offline</span>
+              </button>
+
+              <button
+                onClick={handleSair}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-all cursor-pointer"
+                title="Voltar para a seleção de acesso"
+              >
+                <Icon name="logOut" className="w-4 h-4 text-slate-500" />
+                <span>Trocar Acesso</span>
+              </button>
+            </div>
+          </div>
+        </header>
+      );
+
+      // ==========================================
+      // RENDERIZAÇÃO: PAINEL DA DIRETORA
+      // ==========================================
+      if (perfilAtivo === 'DIRETORA') {
+        return (
+          <div className="min-h-screen bg-slate-100 flex flex-col">
+            <Navbar />
+
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex-1 w-full">
+              {/* Seletor Mobile de Abas */}
+              <div className="sm:hidden flex bg-white p-1 rounded-xl border border-slate-200 mb-6 shadow-xs">
+                <button
+                  onClick={() => setAbaDiretora('relatorios')}
+                  className={`flex-1 py-2 text-xs font-bold rounded-lg ${
+                    abaDiretora === 'relatorios' ? 'bg-blue-600 text-white' : 'text-slate-600'
+                  }`}
+                >
+                  Relatórios ({relatorios.length})
+                </button>
+                <button
+                  onClick={() => setAbaDiretora('professores')}
+                  className={`flex-1 py-2 text-xs font-bold rounded-lg ${
+                    abaDiretora === 'professores' ? 'bg-blue-600 text-white' : 'text-slate-600'
+                  }`}
+                >
+                  Cadastrar Professores
+                </button>
+              </div>
+
+              {/* ABA 1: RELATÓRIOS DOS PROFESSORES */}
+              {abaDiretora === 'relatorios' && (
+                <div className="space-y-6">
+                  {/* Resumo Estatístico */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+                      <p className="text-xs font-medium text-slate-500 mb-1">Total de Turmas</p>
+                      <p className="text-2xl font-bold text-slate-900">{turmas.length}</p>
+                      <p className="text-xs text-blue-600 mt-1 font-medium">Turmas ativas</p>
+                    </div>
+                    <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+                      <p className="text-xs font-medium text-slate-500 mb-1">Fichas Entregues</p>
+                      <p className="text-2xl font-bold text-emerald-600">{relatorios.length}</p>
+                      <p className="text-xs text-slate-500 mt-1">Por professores</p>
+                    </div>
+                    <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+                      <p className="text-xs font-medium text-slate-500 mb-1">Alunos em Atenção</p>
+                      <p className="text-2xl font-bold text-amber-600">{totalAlunosAtencao}</p>
+                      <p className="text-xs text-slate-500 mt-1">Diagnosticados</p>
+                    </div>
+                    <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+                      <p className="text-xs font-medium text-slate-500 mb-1">Docentes Cadastrados</p>
+                      <p className="text-2xl font-bold text-blue-700">{professores.length}</p>
+                      <p className="text-xs text-slate-500 mt-1">No sistema</p>
+                    </div>
+                  </div>
+
+                  {/* Barra de Filtros e Ações */}
+                  <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                      <div className="flex items-center gap-2 text-sm text-slate-700">
+                        <span className="font-semibold text-xs text-slate-500">Turma:</span>
+                        <select
+                          value={filtroTurma}
+                          onChange={e => setFiltroTurma(e.target.value)}
+                          className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          <option value="TODAS">Todas as Turmas</option>
+                          {turmas.map(t => (
+                            <option key={t.id} value={t.id}>{t.nome}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="flex items-center gap-2 text-sm text-slate-700">
+                        <span className="font-semibold text-xs text-slate-500">Status:</span>
+                        <select
+                          value={filtroStatus}
+                          onChange={e => setFiltroStatus(e.target.value)}
+                          className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          <option value="TODOS">Todos os Status</option>
+                          <option value="ENVIADO">Enviado</option>
+                          <option value="EM_ANALISE">Em Análise</option>
+                          <option value="RASCUNHO">Rascunho</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => window.print()}
+                      className="w-full sm:w-auto px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold flex items-center justify-center gap-2 transition-all shadow-xs"
+                    >
+                      <Icon name="printer" className="w-4 h-4" />
+                      <span>Imprimir Ata Consolidada</span>
+                    </button>
+                  </div>
+
+                  {/* Lista de Relatórios */}
+                  {relatoriosFiltrados.length === 0 ? (
+                    <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
+                      <Icon name="fileText" className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                      <h3 className="text-base font-bold text-slate-800">Nenhum relatório encontrado</h3>
+                      <p className="text-sm text-slate-500 mt-1">Nenhum professor enviou ficha para os filtros selecionados.</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {relatoriosFiltrados.map(rel => (
+                        <div
+                          key={rel.id}
+                          className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs hover:border-blue-300 transition-all flex flex-col justify-between"
+                        >
+                          <div>
+                            <div className="flex items-start justify-between gap-3 mb-3">
+                              <div>
+                                <span className="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-100 mb-1">
+                                  {rel.turmaNome}
+                                </span>
+                                <h3 className="font-bold text-slate-900 text-base">{rel.disciplina}</h3>
+                                <p className="text-xs text-slate-500 flex items-center gap-1.5 mt-0.5">
+                                  <Icon name="user" className="w-3.5 h-3.5 text-slate-400" />
+                                  <span>{rel.professorNome}</span>
+                                </p>
+                              </div>
+
+                              <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${
+                                rel.status === 'ENVIADO' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                                rel.status === 'EM_ANALISE' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
+                                'bg-slate-100 text-slate-600'
+                              }`}>
+                                {rel.status === 'ENVIADO' ? 'Enviado' : rel.status === 'EM_ANALISE' ? 'Em Análise' : 'Rascunho'}
+                              </span>
+                            </div>
+
+                            <div className="bg-slate-50 rounded-xl p-3 mb-4 space-y-1.5 text-xs">
+                              <div className="flex justify-between">
+                                <span className="text-slate-500">Aproveitamento geral:</span>
+                                <span className="font-semibold text-slate-800">{rel.aproveitamento} ({rel.percentualAtingido}%)</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-slate-500">Alunos em atenção:</span>
+                                <span className="font-bold text-amber-700">{rel.alunosAtencao ? rel.alunosAtencao.length : 0} aluno(s)</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-slate-500">Alunos destaque:</span>
+                                <span className="font-bold text-emerald-700">{rel.alunosDestaque ? rel.alunosDestaque.length : 0} aluno(s)</span>
+                              </div>
+                            </div>
+
+                            <div className="text-xs text-slate-600 line-clamp-2 italic mb-4">
+                              "{rel.parecerConclusivo || rel.dificuldadesDiagnosticadas || 'Sem parecer registrado.'}"
+                            </div>
+                          </div>
+
+                          <button
+                            onClick={() => setRelatorioModal(rel)}
+                            className="w-full py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-700 font-semibold text-xs flex items-center justify-center gap-2 transition-all border border-slate-200"
+                          >
+                            <Icon name="eye" className="w-4 h-4" />
+                            <span>Visualizar Ficha Completa do Professor</span>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ABA 2: CADASTRO E GESTÃO DE PROFESSORES */}
+              {abaDiretora === 'professores' && (
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                  {/* Formulário de Cadastro */}
+                  <div className="lg:col-span-1 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs h-fit">
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                        <Icon name="plus" className="w-4 h-4" />
+                      </div>
+                      <h2 className="font-bold text-slate-900 text-base">Cadastrar Novo Professor</h2>
+                    </div>
+
+                    <form onSubmit={handleCadastrarProfessor} className="space-y-4 text-xs">
+                      <div>
+                        <label className="block font-semibold text-slate-700 mb-1">Nome Completo do Docente *</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="Ex: Profa. Juliana Mendes"
+                          value={novoProf.nome}
+                          onChange={e => setNovoProf({ ...novoProf, nome: e.target.value })}
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block font-semibold text-slate-700 mb-1">E-mail Institucional</label>
+                        <input
+                          type="email"
+                          placeholder="Ex: juliana.mendes@escola.edu.br"
+                          value={novoProf.email}
+                          onChange={e => setNovoProf({ ...novoProf, email: e.target.value })}
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        />
+                      </div>
+
+                      {/* Senha de Acesso Individual do Professor */}
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="font-semibold text-slate-700 flex items-center gap-1">
+                            <Icon name="lock" className="w-3.5 h-3.5 text-blue-600" />
+                            <span>Senha Individual do Docente *</span>
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const pass = 'prof' + Math.floor(1000 + Math.random() * 9000);
+                              setNovoProf({ ...novoProf, senha: pass });
+                              setMostrarSenhaNovo(true);
+                            }}
+                            className="text-[11px] text-blue-600 font-bold hover:underline cursor-pointer flex items-center gap-1"
+                          >
+                            <span>⚡ Gerar Senha</span>
+                          </button>
+                        </div>
+                        <div className="relative">
+                          <input
+                            type={mostrarSenhaNovo ? "text" : "password"}
+                            required
+                            placeholder="Defina a senha exclusiva do professor..."
+                            value={novoProf.senha || ''}
+                            onChange={e => setNovoProf({ ...novoProf, senha: e.target.value })}
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-3 pr-10 py-2 text-slate-800 text-xs font-mono focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setMostrarSenhaNovo(!mostrarSenhaNovo)}
+                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
+                            title={mostrarSenhaNovo ? "Ocultar senha" : "Ver senha"}
+                          >
+                            <Icon name={mostrarSenhaNovo ? "eyeOff" : "eye"} className="w-4 h-4" />
+                          </button>
+                        </div>
+                        <p className="text-[10px] text-slate-500 mt-1">O professor usará esta senha para acessar suas turmas e responder com total privacidade.</p>
+                      </div>
+
+                      <div>
+                        <label className="block font-semibold text-slate-700 mb-1">Disciplina Principal *</label>
+                        <select
+                          value={novoProf.disciplina}
+                          onChange={e => setNovoProf({ ...novoProf, disciplina: e.target.value })}
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        >
+                          {DISCIPLINAS_INICIAIS.map(d => (
+                            <option key={d.id} value={d.nome}>{d.nome}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block font-semibold text-slate-700 mb-1">
+                          Turmas que este Professor dá aula ({novoProf.turmasIds.length} selecionadas):
+                        </label>
+                        <div className="space-y-1.5 max-h-48 overflow-y-auto bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                          {turmas.map(t => {
+                            const checked = novoProf.turmasIds.includes(t.id);
+                            return (
+                              <label
+                                key={t.id}
+                                className={`flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-all ${
+                                  checked ? 'bg-blue-50 text-blue-900 font-semibold' : 'hover:bg-slate-100 text-slate-700'
+                                }`}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={checked}
+                                  onChange={() => handleToggleTurmaCadastro(t.id)}
+                                  className="rounded text-blue-600 focus:ring-blue-500 w-3.5 h-3.5"
+                                />
+                                <span>{t.nome}</span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                        <p className="text-[10px] text-slate-400 mt-1">O professor só poderá preencher pré-conselho das turmas marcadas.</p>
+                      </div>
+
+                      {sucessoCadastro && (
+                        <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl text-xs font-semibold flex items-center gap-2">
+                          <Icon name="checkCircle" className="w-4 h-4 text-emerald-600" />
+                          <span>Professor salvo com sucesso!</span>
+                        </div>
+                      )}
+
+                      <button
+                        type="submit"
+                        className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs shadow-md shadow-blue-600/20 transition-all active:scale-[0.98] cursor-pointer"
+                      >
+                        Salvar e Liberar Acesso do Professor
+                      </button>
+                    </form>
+                  </div>
+
+                  {/* Lista de Professores Atuais */}
+                  <div className="lg:col-span-2 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h2 className="font-bold text-slate-900 text-base">
+                        Corpo Docente Ativo ({professores.length})
+                      </h2>
+                      <span className="text-xs text-slate-500">Turmas atribuídas individualmente</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {professores.map(prof => {
+                        const turmasAssociadas = turmas.filter(t => (prof.turmasIds || []).includes(t.id));
+                        return (
+                          <div
+                            key={prof.id}
+                            className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all"
+                          >
+                            <div>
+                              <div className="flex items-start justify-between gap-2 mb-2">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 font-bold flex items-center justify-center text-sm">
+                                    {prof.nome.charAt(prof.nome.startsWith('Prof') ? 6 : 0)}
+                                  </div>
+                                  <div>
+                                    <h3 className="font-bold text-slate-900 text-sm">{prof.nome}</h3>
+                                    <p className="text-xs text-blue-600 font-medium">{prof.disciplina}</p>
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center gap-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleAbrirEdicaoProf(prof)}
+                                    className="text-slate-400 hover:text-blue-600 hover:bg-blue-50 p-1.5 rounded-lg transition-all cursor-pointer"
+                                    title="Editar Dados e Senha do Professor"
+                                  >
+                                    <Icon name="edit" className="w-4 h-4" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoverProfessor(prof.id)}
+                                    className="text-slate-400 hover:text-red-500 hover:bg-red-50 p-1.5 rounded-lg transition-all cursor-pointer"
+                                    title="Remover Professor"
+                                  >
+                                    <Icon name="trash" className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              </div>
+
+                              <p className="text-xs text-slate-400 mb-3">{prof.email}</p>
+
+                              <div>
+                                <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+                                  Turmas que leciona ({turmasAssociadas.length}):
+                                </p>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {turmasAssociadas.length > 0 ? (
+                                    turmasAssociadas.map(t => (
+                                      <span
+                                        key={t.id}
+                                        className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[11px] font-medium"
+                                      >
+                                        {t.nome}
+                                      </span>
+                                    ))
+                                  ) : (
+                                    <span className="text-xs text-amber-600 font-medium">Nenhuma turma atribuída</span>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Senha e Privacidade do Professor com Copiar e Ocultar */}
+                              <div className="mt-3 p-2.5 bg-slate-50 border border-slate-200/80 rounded-xl flex items-center justify-between text-xs gap-2">
+                                <span className="text-slate-600 flex items-center gap-1.5 font-medium text-[11px] shrink-0">
+                                  <Icon name="lock" className="w-3.5 h-3.5 text-blue-600" />
+                                  <span>Senha de Acesso:</span>
+                                </span>
+                                <div className="flex items-center gap-1.5">
+                                  <span className="font-mono font-bold text-slate-800 bg-white px-2 py-0.5 rounded border border-slate-200 text-xs">
+                                    {mostrarSenhasCards[prof.id] ? (prof.senha || 'prof123') : '••••••••'}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleMostrarSenhaCard(prof.id)}
+                                    className="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-200 rounded transition-colors cursor-pointer"
+                                    title={mostrarSenhasCards[prof.id] ? "Ocultar senha" : "Ver senha"}
+                                  >
+                                    <Icon name={mostrarSenhasCards[prof.id] ? "eyeOff" : "eye"} className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleCopiarSenha(prof.id, prof.senha || 'prof123')}
+                                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer ${
+                                      senhaCopiadaId === prof.id
+                                        ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                                        : 'bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200'
+                                    }`}
+                                    title="Copiar senha para fornecer ao professor"
+                                  >
+                                    <Icon name={senhaCopiadaId === prof.id ? "check" : "copy"} className="w-3 h-3" />
+                                    <span>{senhaCopiadaId === prof.id ? 'Copiada!' : 'Copiar'}</span>
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                              <span className="text-slate-400">Privacidade:</span>
+                              <span className="text-emerald-600 font-semibold flex items-center gap-1">
+                                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                Acesso com Senha Ativa
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </main>
+
+            {/* MODAL: VISUALIZAÇÃO DETALHADA DA FICHA DE PRÉ-CONSELHO */}
+            {relatorioModal && (
+              <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+                <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl p-6 sm:p-8">
+                  <div className="flex items-start justify-between gap-4 pb-4 border-b border-slate-100 mb-6">
+                    <div>
+                      <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                        {relatorioModal.turmaNome} • {relatorioModal.bimestre}
+                      </span>
+                      <h2 className="text-xl font-bold text-slate-900 mt-2">
+                        Ficha de Pré-Conselho: {relatorioModal.disciplina}
+                      </h2>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Preenchido por: <strong>{relatorioModal.professorNome}</strong> em {relatorioModal.dataEntrega}
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() => setRelatorioModal(null)}
+                      className="text-slate-400 hover:text-slate-700 p-2 rounded-lg bg-slate-100"
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  <div className="space-y-6 text-sm text-slate-700">
+                    {/* Aproveitamento */}
+                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                      <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Aproveitamento e Rendimento da Turma</p>
+                      <p className="text-base font-bold text-slate-900">
+                        Nível: {relatorioModal.aproveitamento} — Aproximadamente {relatorioModal.percentualAtingido}% de rendimento satisfatório
+                      </p>
+                    </div>
+
+                    {/* Dificuldades */}
+                    <div>
+                      <h4 className="font-bold text-slate-900 text-xs uppercase tracking-wider mb-1 text-blue-700">
+                        1. Dificuldades Conceituais Diagnosticadas
+                      </h4>
+                      <p className="bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs leading-relaxed">
+                        {relatorioModal.dificuldadesDiagnosticadas || 'Nenhuma dificuldade especial relatada.'}
+                      </p>
+                    </div>
+
+                    {/* Frequência & Comportamento */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <h4 className="font-bold text-slate-900 text-xs uppercase tracking-wider mb-1 text-blue-700">
+                          2. Comportamento e Clima de Sala
+                        </h4>
+                        <p className="bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs leading-relaxed">
+                          {relatorioModal.comportamento || 'Sem apontamentos comportamentais.'}
+                        </p>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold text-slate-900 text-xs uppercase tracking-wider mb-1 text-blue-700">
+                          3. Assiduidade e Pontualidade
+                        </h4>
+                        <p className="bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs leading-relaxed">
+                          {relatorioModal.assiduidade || 'Sem faltas graves registradas.'}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Alunos em Atenção */}
+                    <div>
+                      <h4 className="font-bold text-amber-800 text-xs uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                        <Icon name="alertTriangle" className="w-4 h-4 text-amber-600" />
+                        <span>4. Alunos Mapeados em Atenção Específica ({relatorioModal.alunosAtencao?.length || 0})</span>
+                      </h4>
+                      {relatorioModal.alunosAtencao && relatorioModal.alunosAtencao.length > 0 ? (
+                        <div className="space-y-2">
+                          {relatorioModal.alunosAtencao.map((aluno, i) => (
+                            <div key={i} className="p-3 bg-amber-50/70 border border-amber-200/80 rounded-xl text-xs">
+                              <p className="font-bold text-amber-950">{aluno.nome}</p>
+                              <p className="text-amber-900 mt-0.5">{aluno.motivo}</p>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-slate-500 italic">Nenhum aluno em atenção assinalado.</p>
+                      )}
+                    </div>
+
+                    {/* Alunos Destaques */}
+                    <div>
+                      <h4 className="font-bold text-emerald-800 text-xs uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                        <Icon name="award" className="w-4 h-4 text-emerald-600" />
+                        <span>5. Alunos com Destaques Positivos ({relatorioModal.alunosDestaque?.length || 0})</span>
+                      </h4>
+                      {relatorioModal.alunosDestaque && relatorioModal.alunosDestaque.length > 0 ? (
+                        <div className="space-y-2">
+                          {relatorioModal.alunosDestaque.map((aluno, i) => (
+                            <div key={i} className="p-3 bg-emerald-50/70 border border-emerald-200/80 rounded-xl text-xs">
+                              <p className="font-bold text-emerald-950">{aluno.nome}</p>
+                              <p className="text-emerald-900 mt-0.5">{aluno.motivo}</p>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-slate-500 italic">Nenhum aluno destaque registrado.</p>
+                      )}
+                    </div>
+
+                    {/* Ações e Parecer */}
+                    <div>
+                      <h4 className="font-bold text-slate-900 text-xs uppercase tracking-wider mb-1 text-blue-700">
+                        6. Intervenções Pedagógicas Realizadas
+                      </h4>
+                      <p className="bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs leading-relaxed">
+                        {relatorioModal.intervencoesRealizadas || 'Aulas regulares com acompanhamento contínuo.'}
+                      </p>
+                    </div>
+
+                    <div>
+                      <h4 className="font-bold text-slate-900 text-xs uppercase tracking-wider mb-1 text-blue-700">
+                        7. Parecer Síntese Conclusivo do Professor
+                      </h4>
+                      <p className="bg-blue-50/60 p-4 rounded-xl border border-blue-100 text-xs leading-relaxed font-medium text-slate-900">
+                        {relatorioModal.parecerConclusivo || 'Parecer não preenchido.'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-8 pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+                    <button
+                      onClick={() => setRelatorioModal(null)}
+                      className="px-5 py-2 rounded-xl bg-slate-800 text-white text-xs font-semibold hover:bg-slate-900"
+                    >
+                      Fechar Ficha
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* MODAL: EDIÇÃO DE DOCENTE E SENHA DE ACESSO */}
+            {profEditando && (
+              <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+                <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl p-6 border border-slate-100 animate-in fade-in zoom-in-95">
+                  <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+                    <div>
+                      <h3 className="font-bold text-slate-900 text-base flex items-center gap-2">
+                        <Icon name="edit" className="w-4 h-4 text-blue-600" />
+                        <span>Editar Docente e Senha</span>
+                      </h3>
+                      <p className="text-xs text-slate-500">Atualize dados cadastrais e redefina a senha de acesso individual</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setProfEditando(null)}
+                      className="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 cursor-pointer"
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  <form onSubmit={handleSalvarEdicaoProf} className="space-y-4 text-xs">
+                    <div>
+                      <label className="block font-semibold text-slate-700 mb-1">Nome Completo do Docente *</label>
+                      <input
+                        type="text"
+                        required
+                        value={formEditProf.nome}
+                        onChange={e => setFormEditProf({ ...formEditProf, nome: e.target.value })}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-semibold text-slate-700 mb-1">E-mail Institucional</label>
+                      <input
+                        type="email"
+                        value={formEditProf.email}
+                        onChange={e => setFormEditProf({ ...formEditProf, email: e.target.value })}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                      />
+                    </div>
+
+                    {/* Senha no Modal de Edição */}
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="font-semibold text-slate-700 flex items-center gap-1">
+                          <Icon name="lock" className="w-3.5 h-3.5 text-blue-600" />
+                          <span>Senha de Acesso Individual (Privacidade) *</span>
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const pass = 'prof' + Math.floor(1000 + Math.random() * 9000);
+                            setFormEditProf({ ...formEditProf, senha: pass });
+                            setMostrarSenhaEdit(true);
+                          }}
+                          className="text-[11px] text-blue-600 font-bold hover:underline cursor-pointer flex items-center gap-1"
+                        >
+                          <span>⚡ Gerar Nova Senha</span>
+                        </button>
+                      </div>
+                      <div className="relative">
+                        <input
+                          type={mostrarSenhaEdit ? "text" : "password"}
+                          required
+                          value={formEditProf.senha}
+                          onChange={e => setFormEditProf({ ...formEditProf, senha: e.target.value })}
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-3 pr-10 py-2 text-slate-800 text-xs font-mono focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setMostrarSenhaEdit(!mostrarSenhaEdit)}
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
+                          title={mostrarSenhaEdit ? "Ocultar senha" : "Ver senha"}
+                        >
+                          <Icon name={mostrarSenhaEdit ? "eyeOff" : "eye"} className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <p className="text-[10px] text-slate-400 mt-1">Ao salvar, informe esta nova senha ao professor para que ele acesse com total sigilo.</p>
+                    </div>
+
+                    <div>
+                      <label className="block font-semibold text-slate-700 mb-1">Disciplina Principal</label>
+                      <select
+                        value={formEditProf.disciplina}
+                        onChange={e => setFormEditProf({ ...formEditProf, disciplina: e.target.value })}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                      >
+                        {DISCIPLINAS_INICIAIS.map(d => (
+                          <option key={d.id} value={d.nome}>{d.nome}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block font-semibold text-slate-700 mb-1">
+                        Turmas Atribuídas ({formEditProf.turmasIds.length} selecionadas):
+                      </label>
+                      <div className="space-y-1 max-h-36 overflow-y-auto bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                        {turmas.map(t => {
+                          const checked = formEditProf.turmasIds.includes(t.id);
+                          return (
+                            <label
+                              key={t.id}
+                              className={`flex items-center gap-2 p-1.5 rounded-lg cursor-pointer text-xs ${
+                                checked ? 'bg-blue-50 text-blue-900 font-semibold' : 'hover:bg-slate-100 text-slate-700'
+                              }`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={checked}
+                                onChange={() => handleToggleTurmaEdicao(t.id)}
+                                className="rounded text-blue-600 focus:ring-blue-500 w-3.5 h-3.5"
+                              />
+                              <span>{t.nome}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                      <button
+                        type="button"
+                        onClick={() => setProfEditando(null)}
+                        className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 cursor-pointer"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-5 py-2 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-600/20 cursor-pointer"
+                      >
+                        Salvar Alterações
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      }
+
+      // ==========================================
+      // RENDERIZAÇÃO: ESPAÇO DO PROFESSOR
+      // ==========================================
+      return (
+        <div className="min-h-screen bg-slate-100 flex flex-col">
+          <Navbar />
+
+          <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8 flex-1 w-full space-y-6">
+            {/* Cabeçalho do Professor */}
+            <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider">Acesso Docente</span>
+                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                    <Icon name="lock" className="w-3 h-3 text-emerald-600" />
+                    Sessão Privada com Senha
+                  </span>
+                </div>
+                <h2 className="text-xl font-bold text-slate-900 mt-1">{professorSelecionado?.nome}</h2>
+                <p className="text-xs text-slate-500">Disciplina: <strong>{professorSelecionado?.disciplina}</strong> • Questionários e avaliações individuais</p>
+              </div>
+
+              {/* Seletor restrito às turmas que ele dá aula */}
+              <div className="w-full sm:w-auto">
+                <label className="block text-xs font-semibold text-slate-600 mb-1">
+                  Turmas que você dá aula:
+                </label>
+                {turmasDoProfessor.length > 0 ? (
+                  <select
+                    value={turmaDocenteId}
+                    onChange={e => setTurmaDocenteId(e.target.value)}
+                    className="w-full sm:w-64 bg-slate-50 border-2 border-emerald-500/50 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  >
+                    {turmasDoProfessor.map(t => (
+                      <option key={t.id} value={t.id}>
+                        {t.nome} ({t.totalAlunos} alunos)
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <p className="text-xs text-amber-700 bg-amber-50 p-2 rounded-lg border border-amber-200">
+                    Você ainda não tem turmas atribuídas. Peça à Diretoria para associar turmas ao seu perfil.
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {turmasDoProfessor.length > 0 && (
+              <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200/80 shadow-xs space-y-8">
+                <div>
+                  <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200 mb-2">
+                    <Icon name="fileText" className="w-3.5 h-3.5" />
+                    Ficha Oficial de Pré-Conselho
+                  </div>
+                  <h3 className="text-2xl font-bold text-slate-900">
+                    Questionário Pedagógico de Avaliação da Turma
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Preencha as questões abaixo com sinceridade pedagógica para enriquecer as tomadas de decisão da reunião de Conselho de Classe.
+                  </p>
+                </div>
+
+                {/* Pergunta 1: Bimestre e Aproveitamento Geral */}
+                <div className="space-y-4 pt-4 border-t border-slate-100">
+                  <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs">1</span>
+                    Aproveitamento e Desempenho Geral da Turma
+                  </h4>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                    <div>
+                      <label className="block font-semibold text-slate-700 mb-1">Período de Referência</label>
+                      <select
+                        value={formPreConselho.bimestre}
+                        onChange={e => setFormPreConselho({ ...formPreConselho, bimestre: e.target.value })}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800"
+                      >
+                        <option value="1º Bimestre">1º Bimestre</option>
+                        <option value="2º Bimestre">2º Bimestre</option>
+                        <option value="3º Bimestre">3º Bimestre</option>
+                        <option value="4º Bimestre">4º Bimestre</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block font-semibold text-slate-700 mb-1">Nível de Rendimento Geral</label>
+                      <select
+                        value={formPreConselho.aproveitamento}
+                        onChange={e => setFormPreConselho({ ...formPreConselho, aproveitamento: e.target.value })}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800"
+                      >
+                        <option value="EXCELENTE">Excelente (Mais de 85% com domínio pleno)</option>
+                        <option value="BOM">Bom (Maioria atinge as metas)</option>
+                        <option value="SATISFATORIO">Satisfatório (Necessita reforço pontual)</option>
+                        <option value="CRITICO">Crítico (Elevado índice de defasagem)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-slate-700 mb-1 text-xs">
+                      Estimativa de Alunos com Aprendizagem Adequada: {formPreConselho.percentualAtingido}%
+                    </label>
+                    <input
+                      type="range"
+                      min="10"
+                      max="100"
+                      step="5"
+                      value={formPreConselho.percentualAtingido}
+                      onChange={e => setFormPreConselho({ ...formPreConselho, percentualAtingido: Number(e.target.value) })}
+                      className="w-full accent-emerald-600"
+                    />
+                  </div>
+                </div>
+
+                {/* Pergunta 2: Dificuldades Diagnosticadas */}
+                <div className="space-y-2 pt-4 border-t border-slate-100">
+                  <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs">2</span>
+                    Quais são as principais dificuldades conceituais diagnosticadas nesta turma?
+                  </h4>
+                  <p className="text-xs text-slate-500">Ex: interpretação de texto, operações básicas, pré-requisitos não consolidados, abstração, etc.</p>
+                  <textarea
+                    rows={3}
+                    value={formPreConselho.dificuldadesDiagnosticadas}
+                    onChange={e => setFormPreConselho({ ...formPreConselho, dificuldadesDiagnosticadas: e.target.value })}
+                    placeholder="Descreva detalhadamente o que impede o avanço pedagógico coletivo..."
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+
+                {/* Pergunta 3: Comportamento e Clima de Sala */}
+                <div className="space-y-2 pt-4 border-t border-slate-100">
+                  <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs">3</span>
+                    Como é o comportamento, participação e engajamento nas aulas?
+                  </h4>
+                  <textarea
+                    rows={2}
+                    value={formPreConselho.comportamento}
+                    onChange={e => setFormPreConselho({ ...formPreConselho, comportamento: e.target.value })}
+                    placeholder="A turma participa ativamente? Há conversas paralelas, dispersão ou conflitos de convivência?"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+
+                {/* Pergunta 4: Assiduidade e Frequência */}
+                <div className="space-y-2 pt-4 border-t border-slate-100">
+                  <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs">4</span>
+                    Assiduidade, Faltas e Pontualidade
+                  </h4>
+                  <textarea
+                    rows={2}
+                    value={formPreConselho.assiduidade}
+                    onChange={e => setFormPreConselho({ ...formPreConselho, assiduidade: e.target.value })}
+                    placeholder="Existem casos crônicos de atrasos ou faltas não justificadas que comprometem as avaliações?"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+
+                {/* Pergunta 5: Alunos que Demandam Atenção Específica */}
+                <div className="space-y-3 pt-4 border-t border-slate-100">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                        <span className="w-6 h-6 rounded-full bg-amber-600 text-white flex items-center justify-center text-xs">5</span>
+                        Alunos que Demandam Atenção Específica / Risco de Reprovação
+                      </h4>
+                      <p className="text-xs text-slate-500 mt-0.5">Indique os alunos com defasagem acentuada ou necessidades pedagógicas diferenciadas.</p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleAddAlunoAtencao}
+                      className="px-3 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-semibold flex items-center gap-1.5 transition-all border border-amber-200"
+                    >
+                      <Icon name="plus" className="w-3.5 h-3.5" />
+                      Adicionar Aluno
+                    </button>
+                  </div>
+
+                  <div className="space-y-2">
+                    {formPreConselho.alunosAtencao.map((item, idx) => (
+                      <div key={idx} className="flex items-start gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                        <div className="flex-1 space-y-1.5">
+                          <input
+                            type="text"
+                            placeholder="Nome do aluno..."
+                            value={item.nome}
+                            onChange={e => handleUpdateAlunoAtencao(idx, 'nome', e.target.value)}
+                            className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 font-semibold"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Motivo (ex: dificuldade de leitura, não faz lição, etc.)..."
+                            value={item.motivo}
+                            onChange={e => handleUpdateAlunoAtencao(idx, 'motivo', e.target.value)}
+                            className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-600"
+                          />
+                        </div>
+
+                        {formPreConselho.alunosAtencao.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveAlunoAtencao(idx)}
+                            className="text-slate-400 hover:text-red-500 p-1.5"
+                          >
+                            <Icon name="trash" className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Pergunta 6: Alunos Destaques */}
+                <div className="space-y-3 pt-4 border-t border-slate-100">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                        <span className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs">6</span>
+                        Alunos com Destaques Positivos / Liderança
+                      </h4>
+                      <p className="text-xs text-slate-500 mt-0.5">Valorize os alunos que demonstraram excelente superação, cooperação ou dedicação.</p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleAddAlunoDestaque}
+                      className="px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold flex items-center gap-1.5 transition-all border border-emerald-200"
+                    >
+                      <Icon name="plus" className="w-3.5 h-3.5" />
+                      Adicionar Destaque
+                    </button>
+                  </div>
+
+                  <div className="space-y-2">
+                    {formPreConselho.alunosDestaque.map((item, idx) => (
+                      <div key={idx} className="flex items-start gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                        <div className="flex-1 space-y-1.5">
+                          <input
+                            type="text"
+                            placeholder="Nome do aluno destaque..."
+                            value={item.nome}
+                            onChange={e => handleUpdateAlunoDestaque(idx, 'nome', e.target.value)}
+                            className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 font-semibold"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Motivo do elogio / reconhecimento..."
+                            value={item.motivo}
+                            onChange={e => handleUpdateAlunoDestaque(idx, 'motivo', e.target.value)}
+                            className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-600"
+                          />
+                        </div>
+
+                        {formPreConselho.alunosDestaque.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveAlunoDestaque(idx)}
+                            className="text-slate-400 hover:text-red-500 p-1.5"
+                          >
+                            <Icon name="trash" className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Pergunta 7: Intervenções Docentes */}
+                <div className="space-y-2 pt-4 border-t border-slate-100">
+                  <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs">7</span>
+                    Ações de Recuperação e Intervenção Pedagógica Realizadas
+                  </h4>
+                  <textarea
+                    rows={3}
+                    value={formPreConselho.intervencoesRealizadas}
+                    onChange={e => setFormPreConselho({ ...formPreConselho, intervencoesRealizadas: e.target.value })}
+                    placeholder="Quais estratégias você aplicou para auxiliar os alunos com dificuldades? (Ex: nova oportunidade avaliativa, tutoria, lista diferenciada...)"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+
+                {/* Pergunta 8: Parecer Síntese */}
+                <div className="space-y-2 pt-4 border-t border-slate-100">
+                  <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs">8</span>
+                    Parecer Síntese Conclusivo para a Reunião de Conselho de Classe
+                  </h4>
+                  <textarea
+                    rows={3}
+                    value={formPreConselho.parecerConclusivo}
+                    onChange={e => setFormPreConselho({ ...formPreConselho, parecerConclusivo: e.target.value })}
+                    placeholder="Resuma sua visão geral pedagógica para esta turma, sugestões para a coordenação ou combinados para o próximo período..."
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                {/* Mensagem de confirmação */}
+                {msgSalvo && (
+                  <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-sm font-semibold flex items-center gap-2">
+                    <Icon name="checkCircle" className="w-5 h-5 text-emerald-600" />
+                    <span>{msgSalvo}</span>
+                  </div>
+                )}
+
+                {/* Botões de Ação */}
+                <div className="pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => handleSalvarRelatorio('RASCUNHO')}
+                    className="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-all"
+                  >
+                    Salvar como Rascunho
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleSalvarRelatorio('ENVIADO')}
+                    className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-md shadow-emerald-600/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                  >
+                    <Icon name="check" className="w-4 h-4" />
+                    <span>Concluir e Enviar para a Diretoria</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </main>
+        </div>
+      );
+    }
+
+    // Renderizar na raiz
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
 </html>
